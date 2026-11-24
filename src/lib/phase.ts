@@ -4,18 +4,19 @@
 import {element, isMetal, type Element} from './elements';
 import {IONIZATION} from './exotic';
 import {compound} from './compounds';
+import {t} from '../i18n';
 
 export type Phase = 'solid' | 'liquid' | 'gas' | 'supercritical' | 'plasma' | 'superfluid' | 'unknown';
 
 export const PHASE_TITLE: Record<Phase, string> = {
-  solid: 'Твёрдое', liquid: 'Жидкость', gas: 'Газ', supercritical: 'Сверхкритический флюид',
-  plasma: 'Плазма', superfluid: 'Сверхтекучая жидкость', unknown: 'Нет данных',
+  solid: t('Твёрдое'), liquid: t('Жидкость'), gas: t('Газ'), supercritical: t('Сверхкритический флюид'),
+  plasma: t('Плазма'), superfluid: t('Сверхтекучая жидкость'), unknown: t('Нет данных'),
 };
 export const PHASE_SHORT: Record<Phase, string> = {
-  solid: 'тв', liquid: 'ж', gas: 'газ', supercritical: 'скф', plasma: 'плазма', superfluid: 'св.тек', unknown: '?',
+  solid: t('тв'), liquid: t('ж'), gas: t('газ'), supercritical: t('скф'), plasma: t('плазма'), superfluid: t('св.тек'), unknown: '?',
 };
 export const PHASE_COMPACT: Record<Phase, string> = {
-  solid: 'ТВЁРДОЕ', liquid: 'ЖИДКОСТЬ', gas: 'ГАЗ', supercritical: 'СВЕРХКРИТ.', plasma: 'ПЛАЗМА', superfluid: 'СВЕРХТЕК.', unknown: '?',
+  solid: t('ТВЁРДОЕ'), liquid: t('ЖИДКОСТЬ'), gas: t('ГАЗ'), supercritical: t('СВЕРХКРИТ.'), plasma: t('ПЛАЗМА'), superfluid: t('СВЕРХТЕК.'), unknown: '?',
 };
 /** Токены палитры данных для фаз */
 export const PHASE_TOKEN: Record<Phase, string> = {
@@ -201,7 +202,7 @@ function fromElement(e: Element): PhaseModel | undefined {
 const WATER: PhaseModel = (() => {
   const pts: [number, number][] = [[273.16, 0.00604], [373.124, 1], [647.096, 217.75]];
   const hv0 = (R * Math.log(1 / 0.00604)) / (1 / 273.16 - 1 / 373.124);
-  return {name: 'Вода', tt: 273.16, pt: 0.00604, tc: 647.096, pc: 217.75, anchors: pts.map(([t, p]) => [1 / t, Math.log(p)] as [number, number]),
+  return {name: t('Вода'), tt: 273.16, pt: 0.00604, tc: 647.096, pc: 217.75, anchors: pts.map(([t, p]) => [1 / t, Math.log(p)] as [number, number]),
     hs: hv0 + 6010, simonA: 10700, simonC: 3, anomalous: {slope: -0.0105, turnP: 2100}, heliumLike: false,
     tripleKnown: true, criticalKnown: true, sublimesAtOneAtm: false, ionization: 12.62};
 })();

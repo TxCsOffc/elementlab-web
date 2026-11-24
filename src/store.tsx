@@ -1,6 +1,6 @@
 import {createContext, useContext, useEffect, useState, type ReactNode} from 'react';
 
-export type PageId = 'sims' | 'table' | 'phase' | 'states' | 'nucleus' | 'channel' | 'wires' | 'litho' | 'process' | 'glossary' | 'about';
+export type PageId = 'sims' | 'table' | 'atom' | 'propmap' | 'moore' | 'phase' | 'states' | 'nucleus' | 'channel' | 'wires' | 'litho' | 'process' | 'glossary' | 'about';
 
 interface Store {
   page: PageId; setPage: (p: PageId) => void;
@@ -33,7 +33,7 @@ export function StoreProvider({children}: {children: ReactNode}) {
   }, []);
 
   const go = (p: PageId, id?: number) => {
-    const next = id ?? (p === 'phase' || p === 'table' || p === 'nucleus' ? selected : undefined);
+    const next = id ?? (p === 'phase' || p === 'table' || p === 'nucleus' || p === 'atom' ? selected : undefined);
     window.location.hash = '/' + p + (next !== undefined ? '/' + next : '');
     setPageState(p);
     if (id !== undefined) setSelected(id);
@@ -41,7 +41,7 @@ export function StoreProvider({children}: {children: ReactNode}) {
   };
 
   return (
-    <Ctx.Provider value={{page, setPage: (p) => go(p), selected, setSelected: (id) => { setSelected(id); if (page === 'phase' || page === 'table' || page === 'nucleus') history.replaceState(null, '', '#/' + page + '/' + id); },
+    <Ctx.Provider value={{page, setPage: (p) => go(p), selected, setSelected: (id) => { setSelected(id); if (page === 'phase' || page === 'table' || page === 'nucleus' || page === 'atom') history.replaceState(null, '', '#/' + page + '/' + id); },
       tempK, setTempK, pressure, setPressure, celsius, setCelsius, go}}>
       {children}
     </Ctx.Provider>

@@ -20,6 +20,7 @@ import {
   type ProcessParams, type ProcessResult,
 } from '../lib/tech';
 import {num, sci} from '../lib/fmt';
+import {t} from '../i18n';
 
 const LEVEL_TOKEN = ['--color-data-categorical-green', '--color-data-yellow-4', '--color-data-categorical-red'];
 
@@ -57,109 +58,109 @@ export default function ProcessPage() {
   type PRow = ProcessResult & {i: number} & Record<string, unknown>;
   const columns: TableColumn<PRow>[] = [
     {key: 'i', header: '#', renderCell: (r) => <Text weight="bold" color={r.i === 0 ? 'accent' : 'secondary'}>{r.i + 1}</Text>},
-    {key: 'l', header: 'Литография', renderCell: (r) => <Text type="supporting">{r.cfg.litho.name}</Text>},
-    {key: 'a', header: 'Архитектура', renderCell: (r) => <Text type="supporting">{r.cfg.arch.name}</Text>},
-    {key: 'c', header: 'Канал', renderCell: (r) => <Text type="supporting">{r.cfg.channel.name}</Text>},
-    {key: 'm', header: 'Провода', renderCell: (r) => <Text type="supporting" weight="semibold">{metalElement(r.cfg.metal).symbol}{r.cfg.backside ? ' · снизу' : ''}</Text>},
-    {key: 'n', header: 'Узел', renderCell: (r) => <Text weight="semibold" hasTabularNumbers>{num(r.node, 2)} нм</Text>},
-    {key: 'p', header: 'Цена', renderCell: (r) => <Text hasTabularNumbers>×{num(r.costPerTr, 2)}</Text>},
-    {key: 's', header: 'Скорость', renderCell: (r) => <Text hasTabularNumbers>×{num(r.perf, 2)}</Text>},
-    {key: 'v', header: 'Итог', renderCell: (r) => <Badge variant={valueCost(r) < 1 ? 'success' : 'warning'} label={'×' + num(valueCost(r), 2)} />},
-    {key: 'y', header: 'Выход', renderCell: (r) => <Text hasTabularNumbers>{num(r.yield * 100, 0)} %</Text>},
-    {key: 't', header: 'Зрелость', renderCell: (r) => <Badge variant={trlBadge(r.trl)} label={'TRL ' + r.trl} />},
-    {key: 'r', header: 'Реализм', renderCell: (r) => <Badge variant={LEVEL_BADGE[realism(r)]} label={REALISM_TITLE[realism(r)]} />},
+    {key: 'l', header: t('Литография'), renderCell: (r) => <Text type="supporting">{r.cfg.litho.name}</Text>},
+    {key: 'a', header: t('Архитектура'), renderCell: (r) => <Text type="supporting">{r.cfg.arch.name}</Text>},
+    {key: 'c', header: t('Канал'), renderCell: (r) => <Text type="supporting">{r.cfg.channel.name}</Text>},
+    {key: 'm', header: t('Провода'), renderCell: (r) => <Text type="supporting" weight="semibold">{metalElement(r.cfg.metal).symbol}{r.cfg.backside ? t(' · снизу') : ''}</Text>},
+    {key: 'n', header: t('Узел'), renderCell: (r) => <Text weight="semibold" hasTabularNumbers>{num(r.node, 2)} {t('нм')}</Text>},
+    {key: 'p', header: t('Цена'), renderCell: (r) => <Text hasTabularNumbers>×{num(r.costPerTr, 2)}</Text>},
+    {key: 's', header: t('Скорость'), renderCell: (r) => <Text hasTabularNumbers>×{num(r.perf, 2)}</Text>},
+    {key: 'v', header: t('Итог'), renderCell: (r) => <Badge variant={valueCost(r) < 1 ? 'success' : 'warning'} label={'×' + num(valueCost(r), 2)} />},
+    {key: 'y', header: t('Выход'), renderCell: (r) => <Text hasTabularNumbers>{num(r.yield * 100, 0)} %</Text>},
+    {key: 't', header: t('Зрелость'), renderCell: (r) => <Badge variant={trlBadge(r.trl)} label={'TRL ' + r.trl} />},
+    {key: 'r', header: t('Реализм'), renderCell: (r) => <Badge variant={LEVEL_BADGE[realism(r)]} label={REALISM_TITLE[realism(r)]} />},
   ];
 
   return (
     <VStack gap={6}>
-      <PageHeader icon={WrenchScrewdriverIcon} title="Поиск техпроцесса меньше 1 нм" subtitle="Перебор литографии × архитектуры × материала канала × металла × питания. Каждый вариант проходит 6 проверок реализма." />
+      <PageHeader icon={WrenchScrewdriverIcon} title={t('Поиск техпроцесса меньше 1 нм')} subtitle={t('Перебор литографии × архитектуры × материала канала × металла × питания. Каждый вариант проходит 6 проверок реализма.')} />
       <Grid columns={{minWidth: 420, max: 2, repeat: 'fit'}} gap={4}>
-        <Section title="Лучший найденный вариант">
+        <Section title={t('Лучший найденный вариант')}>
           {best ? <>
             <HStack gap={3} vAlign="center" wrap="wrap">
-              <Heading level={1} type="display-3">≈ {num(best.node, 2)} нм</Heading>
+              <Heading level={1} type="display-3">≈ {num(best.node, 2)} {t('нм')}</Heading>
               <Badge variant={LEVEL_BADGE[realism(best)]} label={REALISM_TITLE[realism(best)]} />
               <Badge variant={trlBadge(best.trl)} label={'TRL ' + best.trl} />
             </HStack>
             <VStack gap={1}>
-              {([['Литография', best.cfg.litho.name], ['Архитектура', best.cfg.arch.name], ['Канал', best.cfg.channel.name],
-                ['Провода', metalElement(best.cfg.metal).name], ['Питание', best.cfg.backside ? 'с обратной стороны' : 'сверху']] as [string, string][]).map(([k, v]) => (
+              {([[t('Литография'), best.cfg.litho.name], [t('Архитектура'), best.cfg.arch.name], [t('Канал'), best.cfg.channel.name],
+                [t('Провода'), metalElement(best.cfg.metal).name], [t('Питание'), best.cfg.backside ? t('с обратной стороны') : t('сверху')]] as [string, string][]).map(([k, v]) => (
                 <HStack key={k} gap={3}><Text color="secondary">{k}</Text><Text weight="semibold">{v}</Text></HStack>
               ))}
             </VStack>
             <HStack gap={5} wrap="wrap">
-              <Stat label="Цена транзистора" value={'×' + num(best.costPerTr, 2)} />
-              <Stat label="Скорость" value={'×' + num(best.perf, 2)} />
-              <Stat label="Итоговая цена" value={'×' + num(valueCost(best), 2)} tone="accent" />
-              <Stat label="Выход" value={num(best.yield * 100, 0) + ' %'} />
+              <Stat label={t('Цена транзистора')} value={'×' + num(best.costPerTr, 2)} />
+              <Stat label={t('Скорость')} value={'×' + num(best.perf, 2)} />
+              <Stat label={t('Итоговая цена')} value={'×' + num(valueCost(best), 2)} tone="accent" />
+              <Stat label={t('Выход')} value={num(best.yield * 100, 0) + ' %'} />
             </HStack>
             {best.checks.filter((x) => x.level > 0).map((x) => <Text key={x.name} type="supporting" color="secondary">⚠ {x.name}: {x.note}</Text>)}
-            {mature ? <Badge variant="success" label={`На готовых технологиях: ${mature.cfg.litho.name} + ${mature.cfg.arch.name} — ≈ ${num(mature.node, 2)} нм`} />
-              : matureBest && <Text type="supporting" color="secondary">На готовых и полностью реалистичных технологиях цель недостижима: лучшее ≈ {num(matureBest.node, 2)} нм ({matureBest.cfg.litho.name} + {matureBest.cfg.arch.name}).</Text>}
-          </> : <Text color="secondary">Нет вариантов с такими условиями. Ослабьте цель или требование к зрелости.</Text>}
+            {mature ? <Badge variant="success" label={t('На готовых технологиях: {0} + {1} — ≈ {2} нм', mature.cfg.litho.name, mature.cfg.arch.name, num(mature.node, 2))} />
+              : matureBest && <Text type="supporting" color="secondary">{t('На готовых и полностью реалистичных технологиях цель недостижима: лучшее ≈')} {num(matureBest.node, 2)} нм ({matureBest.cfg.litho.name} + {matureBest.cfg.arch.name}).</Text>}
+          </> : <Text color="secondary">{t('Нет вариантов с такими условиями. Ослабьте цель или требование к зрелости.')}</Text>}
         </Section>
-        <Section title="Все варианты: плотность против итоговой цены">
+        <Section title={t('Все варианты: плотность против итоговой цены')}>
           <ResponsiveContainer width="100%" height={320}>
             <ScatterChart margin={{top: 10, right: 16, bottom: 22, left: 8}}>
               <CartesianGrid stroke={c.grid} strokeDasharray="3 3" />
-              <XAxis dataKey="node" type="number" domain={[0, 3]} stroke={c.axis} tick={{fill: c.axis, fontSize: 11}} label={{value: 'Маркетинговый узел, нм (левее — плотнее)', position: 'insideBottom', offset: -12, fill: c.axis, fontSize: 11}} />
+              <XAxis dataKey="node" type="number" domain={[0, 3]} stroke={c.axis} tick={{fill: c.axis, fontSize: 11}} label={{value: t('Маркетинговый узел, нм (левее — плотнее)'), position: 'insideBottom', offset: -12, fill: c.axis, fontSize: 11}} />
               <YAxis dataKey="cost" type="number" scale="log" domain={[0.1, 8]} ticks={[0.1, 0.25, 0.5, 1, 2, 4, 8]} tickFormatter={(v) => '×' + num(v, 2)} stroke={c.axis} tick={{fill: c.axis, fontSize: 11}} />
               <ReferenceArea x1={0} x2={target} y1={0.1} y2={1} fill={c.good} fillOpacity={0.08} />
               <ReferenceLine x={target} stroke={c.neutral} strokeDasharray="5 4" />
-              <ReferenceLine y={1} stroke={c.neutral} label={{value: 'эталон «2 нм»', position: 'insideTopRight', fill: c.axis, fontSize: 10}} />
+              <ReferenceLine y={1} stroke={c.neutral} label={{value: t('эталон «2 нм»'), position: 'insideTopRight', fill: c.axis, fontSize: 10}} />
               <Tooltip contentStyle={{background: c.surface, borderColor: c.grid, borderRadius: 8, color: c.text}} formatter={(v) => num(Number(v), 2)} />
               {scatter.map((d, lvl) => <Scatter key={lvl} data={d} fill={c.tok(LEVEL_TOKEN[lvl])} fillOpacity={0.65} shape="circle" isAnimationActive={false} legendType="none" r={2} />)}
               {best && <Scatter data={[{node: best.node, cost: valueCost(best)}]} fill={c.tok('--color-accent')} shape="star" />}
             </ScatterChart>
           </ResponsiveContainer>
-          <Legend items={[['реалистично', `var(${LEVEL_TOKEN[0]})`], ['на грани', `var(${LEVEL_TOKEN[1]})`], ['фантастика', `var(${LEVEL_TOKEN[2]})`], ['лучший', 'var(--color-accent)']]} />
+          <Legend items={[[t('реалистично'), `var(${LEVEL_TOKEN[0]})`], [t('на грани'), `var(${LEVEL_TOKEN[1]})`], [t('фантастика'), `var(${LEVEL_TOKEN[2]})`], [t('лучший'), 'var(--color-accent)']]} />
         </Section>
       </Grid>
 
-      <Section title="Условия поиска">
+      <Section title={t('Условия поиска')}>
         <Grid columns={{minWidth: 220, max: 3, repeat: 'fit'}} gap={4}>
-          <SegmentedControl label="Литография" value={params.potential ? 'p' : 't'} onChange={(v) => set('potential', v === 'p')}>
-            <SegmentedControlItem value="t" label="сегодня" />
-            <SegmentedControlItem value="p" label="потенциал ~2032" />
+          <SegmentedControl label={t('Литография')} value={params.potential ? 'p' : 't'} onChange={(v) => set('potential', v === 'p')}>
+            <SegmentedControlItem value="t" label={t('сегодня')} />
+            <SegmentedControlItem value="p" label={t('потенциал ~2032')} />
           </SegmentedControl>
-          <Slider label="Цель, нм" value={target} min={0.3} max={2} step={0.01} valueDisplay="text" formatValue={(v: number) => '≤ ' + num(v, 2)} onChange={(v: number) => setTarget(v as number)} />
-          <Slider label="Минимальная зрелость (TRL)" value={minTRL} min={1} max={9} step={1} valueDisplay="text" onChange={(v: number) => setMinTRL(v as number)} />
-          <Slider label="Спейсер, нм" value={params.spacer} min={2} max={10} step={0.1} valueDisplay="text" formatValue={(v: number) => num(v, 1)} onChange={(v: number) => set('spacer', v as number)} />
-          <Slider label="Изолятор затвора (EOT), нм" value={params.eot} min={0.3} max={1.2} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v, 2)} onChange={(v: number) => set('eot', v as number)} />
-          <Slider label="Макс. сопротивление провода, Ом/мкм" value={params.rMax} min={300} max={5000} step={50} valueDisplay="text" onChange={(v: number) => set('rMax', v as number)} />
+          <Slider label={t('Цель, нм')} value={target} min={0.3} max={2} step={0.01} valueDisplay="text" formatValue={(v: number) => '≤ ' + num(v, 2)} onChange={(v: number) => setTarget(v as number)} />
+          <Slider label={t('Минимальная зрелость (TRL)')} value={minTRL} min={1} max={9} step={1} valueDisplay="text" onChange={(v: number) => setMinTRL(v as number)} />
+          <Slider label={t('Спейсер, нм')} value={params.spacer} min={2} max={10} step={0.1} valueDisplay="text" formatValue={(v: number) => num(v, 1)} onChange={(v: number) => set('spacer', v as number)} />
+          <Slider label={t('Изолятор затвора (EOT), нм')} value={params.eot} min={0.3} max={1.2} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v, 2)} onChange={(v: number) => set('eot', v as number)} />
+          <Slider label={t('Макс. сопротивление провода, Ом/мкм')} value={params.rMax} min={300} max={5000} step={50} valueDisplay="text" onChange={(v: number) => set('rMax', v as number)} />
         </Grid>
-        <Switch label="Скрывать фантастику (варианты, нарушающие физику или надёжность)" value={params.realisticOnly} onChange={(v) => set('realisticOnly', v)} />
+        <Switch label={t('Скрывать фантастику (варианты, нарушающие физику или надёжность)')} value={params.realisticOnly} onChange={(v) => set('realisticOnly', v)} />
       </Section>
 
-      <Section title="Топ-12 по итоговой цене">
+      <Section title={t('Топ-12 по итоговой цене')}>
         <Table data={filtered.slice(0, 12).map((r, i) => ({...r, i}) as PRow)} columns={columns} idKey={(r) => `${r.cfg.litho.id}-${r.cfg.arch.id}-${r.cfg.channel.id}-${r.cfg.metal.z}-${r.cfg.backside}`} density="compact" />
       </Section>
 
-      <Section title="Соберите свой вариант">
+      <Section title={t('Соберите свой вариант')}>
         <Grid columns={{minWidth: 200, max: 5, repeat: 'fit'}} gap={3}>
-          <Selector label="Литография" value={cfg.litho} onChange={(v) => v && setCfg({...cfg, litho: v})} options={PATTERNING.map((x) => ({value: x.id, label: x.name}))} />
-          <Selector label="Архитектура" value={cfg.arch} onChange={(v) => v && setCfg({...cfg, arch: v})} options={ARCHS.map((x) => ({value: x.id, label: x.name}))} />
-          <Selector label="Канал" value={cfg.channel} onChange={(v) => v && setCfg({...cfg, channel: v})} options={CHANNELS.map((x) => ({value: x.id, label: x.name}))} />
-          <Selector label="Металл проводов" value={cfg.metal} onChange={(v) => v && setCfg({...cfg, metal: v})} options={METALS.map((x) => ({value: String(x.z), label: `${metalElement(x).symbol} · ${metalElement(x).name}`}))} />
-          <Switch label="Питание с обратной стороны" value={cfg.backside} onChange={(v) => setCfg({...cfg, backside: v})} />
+          <Selector label={t('Литография')} value={cfg.litho} onChange={(v) => v && setCfg({...cfg, litho: v})} options={PATTERNING.map((x) => ({value: x.id, label: x.name}))} />
+          <Selector label={t('Архитектура')} value={cfg.arch} onChange={(v) => v && setCfg({...cfg, arch: v})} options={ARCHS.map((x) => ({value: x.id, label: x.name}))} />
+          <Selector label={t('Канал')} value={cfg.channel} onChange={(v) => v && setCfg({...cfg, channel: v})} options={CHANNELS.map((x) => ({value: x.id, label: x.name}))} />
+          <Selector label={t('Металл проводов')} value={cfg.metal} onChange={(v) => v && setCfg({...cfg, metal: v})} options={METALS.map((x) => ({value: String(x.z), label: `${metalElement(x).symbol} · ${metalElement(x).name}`}))} />
+          <Switch label={t('Питание с обратной стороны')} value={cfg.backside} onChange={(v) => setCfg({...cfg, backside: v})} />
         </Grid>
-        {manual.issues.length ? <Banner status="error" title="Невозможно" description={manual.issues.join('; ')} collapsible={false} /> : <>
+        {manual.issues.length ? <Banner status="error" title={t('Невозможно')} description={manual.issues.join('; ')} collapsible={false} /> : <>
           <HStack gap={5} wrap="wrap">
-            <VStack gap={0.5}><Text type="supporting" color="secondary">Вердикт</Text><Badge variant={LEVEL_BADGE[realism(manual)]} label={REALISM_TITLE[realism(manual)]} /></VStack>
-            <Stat label="Узел" value={'≈ ' + num(manual.node, 2) + ' нм'} />
-            <Stat label="Затвор" value={num(manual.lg, 1) + ' нм'} />
-            <Stat label="Шаг затворов" value={num(manual.cpp, 1) + ' нм'} />
-            <Stat label="Шаг металла" value={num(manual.mmp, 1) + ' нм'} />
-            <Stat label="Выход годных" value={sci(manual.yield * 100, 1) + ' %'} />
-            <Stat label="Цена транзистора" value={'×' + sci(manual.costPerTr, 2)} />
-            <Stat label="Скорость" value={'×' + sci(manual.perf, 2)} />
+            <VStack gap={0.5}><Text type="supporting" color="secondary">{t('Вердикт')}</Text><Badge variant={LEVEL_BADGE[realism(manual)]} label={REALISM_TITLE[realism(manual)]} /></VStack>
+            <Stat label={t('Узел')} value={'≈ ' + num(manual.node, 2) + t(' нм')} />
+            <Stat label={t('Затвор')} value={num(manual.lg, 1) + t(' нм')} />
+            <Stat label={t('Шаг затворов')} value={num(manual.cpp, 1) + t(' нм')} />
+            <Stat label={t('Шаг металла')} value={num(manual.mmp, 1) + t(' нм')} />
+            <Stat label={t('Выход годных')} value={sci(manual.yield * 100, 1) + ' %'} />
+            <Stat label={t('Цена транзистора')} value={'×' + sci(manual.costPerTr, 2)} />
+            <Stat label={t('Скорость')} value={'×' + sci(manual.perf, 2)} />
           </HStack>
           <RealismChecks r={manual} />
-          <Text type="supporting" color="secondary">Шаг затворов ограничивает: {manual.cppLimit}; шаг металла: {manual.mmpLimit}.</Text>
+          <Text type="supporting" color="secondary">{t('Шаг затворов ограничивает:')} {manual.cppLimit}; шаг металла: {manual.mmpLimit}.</Text>
         </>}
       </Section>
 
-      <Note title="Как считается" text="«Нм» — маркетинговые: 2 нм × √(площадь ячейки / площадь эталона «2 нм» класса: шаг затворов 45 нм × шаг металла 21 нм × 6 дорожек). Цена транзистора = цена пластины / (плотность × выход годных). Скорость учитывает тепло, контакт, ёмкость спейсера и провода. Итоговая цена = цена ÷ скорость; всё относительно эталона (EUV, GAA, кремний, медь) = 1. Пороги проверок — оценки, а не результаты моделирования." />
+      <Note title={t('Как считается')} text={t('«Нм» — маркетинговые: 2 нм × √(площадь ячейки / площадь эталона «2 нм» класса: шаг затворов 45 нм × шаг металла 21 нм × 6 дорожек). Цена транзистора = цена пластины / (плотность × выход годных). Скорость учитывает тепло, контакт, ёмкость спейсера и провода. Итоговая цена = цена ÷ скорость; всё относительно эталона (EUV, GAA, кремний, медь) = 1. Пороги проверок — оценки, а не результаты моделирования.')} />
     </VStack>
   );
 }

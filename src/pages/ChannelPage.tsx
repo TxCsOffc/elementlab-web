@@ -11,6 +11,7 @@ import {PageHeader, Note, Section, trlBadge} from '../components/ui';
 import {MultiLine} from '../components/charts';
 import {ARCHS, CHANNELS, gateLimit, lambdaLen, ss, tunneling, type ChannelMaterial} from '../lib/tech';
 import {num, sup} from '../lib/fmt';
+import {t} from '../i18n';
 
 type Row = {m: ChannelMaterial; lMin?: number; by?: string; lSS?: number; lTun?: number} & Record<string, unknown>;
 
@@ -32,12 +33,12 @@ export default function ChannelPage() {
   }).sort((a, b) => (a.lMin ?? 1e9) - (b.lMin ?? 1e9));
 
   const columns: TableColumn<Row>[] = [
-    {key: 'name', header: 'Материал', renderCell: (r) => <Text weight="semibold">{r.m.name}</Text>},
-    {key: 'lmin', header: 'Затвор мин.', renderCell: (r) => r.lMin === undefined ? <Badge variant="error" label="не выключается" /> :
-      <Badge variant={r.lMin < 5 ? 'success' : r.lMin < 10 ? 'warning' : 'error'} label={num(r.lMin, 1) + ' нм'} />},
-    {key: 'by', header: 'Что ограничивает', renderCell: (r) => <Text type="supporting">{r.by ?? 'нет запрещённой зоны'}</Text>},
-    {key: 'trl', header: 'Зрелость', renderCell: (r) => <Badge variant={trlBadge(r.m.trl)} label={'TRL ' + r.m.trl} />},
-    {key: 'note', header: 'Комментарий', renderCell: (r) => <Text type="supporting" color="secondary">{r.m.note}</Text>},
+    {key: 'name', header: t('Материал'), renderCell: (r) => <Text weight="semibold">{r.m.name}</Text>},
+    {key: 'lmin', header: t('Затвор мин.'), renderCell: (r) => r.lMin === undefined ? <Badge variant="error" label={t('не выключается')} /> :
+      <Badge variant={r.lMin < 5 ? 'success' : r.lMin < 10 ? 'warning' : 'error'} label={num(r.lMin, 1) + t(' нм')} />},
+    {key: 'by', header: t('Что ограничивает'), renderCell: (r) => <Text type="supporting">{r.by ?? t('нет запрещённой зоны')}</Text>},
+    {key: 'trl', header: t('Зрелость'), renderCell: (r) => <Badge variant={trlBadge(r.m.trl)} label={'TRL ' + r.m.trl} />},
+    {key: 'note', header: t('Комментарий'), renderCell: (r) => <Text type="supporting" color="secondary">{r.m.note}</Text>},
   ];
 
   const Ls = Array.from({length: 57}, (_, k) => 1 + k * 0.25);
@@ -47,30 +48,30 @@ export default function ChannelPage() {
 
   return (
     <VStack gap={6}>
-      <PageHeader icon={CpuChipIcon} title="Канал транзистора" subtitle="Насколько коротким может быть затвор, чтобы транзистор всё ещё надёжно выключался. Мешают два предела: затвор теряет контроль над каналом, а электроны туннелируют сквозь закрытый канал." />
-      <Section title="Условия">
+      <PageHeader icon={CpuChipIcon} title={t('Канал транзистора')} subtitle={t('Насколько коротким может быть затвор, чтобы транзистор всё ещё надёжно выключался. Мешают два предела: затвор теряет контроль над каналом, а электроны туннелируют сквозь закрытый канал.')} />
+      <Section title={t('Условия')}>
         <Grid columns={{minWidth: 220, max: 5, repeat: 'fit'}} gap={4}>
-          <Selector label="Архитектура" value={archId} onChange={(v) => v && setArchId(v)} options={ARCHS.map((a) => ({value: a.id, label: a.name, description: a.note}))} />
-          <Slider label="Толщина изолятора затвора (EOT), нм" value={eot} min={0.3} max={1.2} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v, 2)} onChange={(v: number) => setEot(v as number)} />
-          <Slider label="Толщина канала Si/Ge/InGaAs, нм" value={bulkT} min={2} max={10} step={0.1} valueDisplay="text" formatValue={(v: number) => num(v, 1)} onChange={(v: number) => setBulkT(v as number)} />
-          <Slider label="Допустимый SS, мВ/дек" value={ssMax} min={65} max={100} step={1} valueDisplay="text" onChange={(v: number) => setSsMax(v as number)} />
-          <Slider label="Допустимая утечка туннелем" value={leakExp} min={-8} max={-3} step={1} valueDisplay="text" formatValue={(v: number) => '10' + sup(v)} onChange={(v: number) => setLeakExp(v as number)} />
+          <Selector label={t('Архитектура')} value={archId} onChange={(v) => v && setArchId(v)} options={ARCHS.map((a) => ({value: a.id, label: a.name, description: a.note}))} />
+          <Slider label={t('Толщина изолятора затвора (EOT), нм')} value={eot} min={0.3} max={1.2} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v, 2)} onChange={(v: number) => setEot(v as number)} />
+          <Slider label={t('Толщина канала Si/Ge/InGaAs, нм')} value={bulkT} min={2} max={10} step={0.1} valueDisplay="text" formatValue={(v: number) => num(v, 1)} onChange={(v: number) => setBulkT(v as number)} />
+          <Slider label={t('Допустимый SS, мВ/дек')} value={ssMax} min={65} max={100} step={1} valueDisplay="text" onChange={(v: number) => setSsMax(v as number)} />
+          <Slider label={t('Допустимая утечка туннелем')} value={leakExp} min={-8} max={-3} step={1} valueDisplay="text" formatValue={(v: number) => '10' + sup(v)} onChange={(v: number) => setLeakExp(v as number)} />
         </Grid>
       </Section>
-      <Section title="Минимальная длина затвора">
+      <Section title={t('Минимальная длина затвора')}>
         <Table data={rows} columns={columns} idKey={(r) => r.m.id} density="compact" />
       </Section>
       <Grid columns={{minWidth: 420, max: 2, repeat: 'fit'}} gap={4}>
-        <Section title="Утечка туннелем исток → сток">
-          <MultiLine series={tunSeries} xLabel="Длина затвора, нм" yDomain={[1e-12, 1]} logY refs={[{y: target, label: 'допустимая утечка'}]} />
-          <Text type="supporting" color="secondary">Чем короче затвор, тем легче электрону «просочиться» сквозь закрытый канал. Тяжёлые электроны (MoS₂, WS₂) просачиваются хуже.</Text>
+        <Section title={t('Утечка туннелем исток → сток')}>
+          <MultiLine series={tunSeries} xLabel={t('Длина затвора, нм')} yDomain={[1e-12, 1]} logY refs={[{y: target, label: t('допустимая утечка')}]} />
+          <Text type="supporting" color="secondary">{t('Чем короче затвор, тем легче электрону «просочиться» сквозь закрытый канал. Тяжёлые электроны (MoS₂, WS₂) просачиваются хуже.')}</Text>
         </Section>
-        <Section title="Качество выключения (SS)">
-          <MultiLine series={ssSeries} xLabel="Длина затвора, нм" yDomain={[55, 160]} refs={[{y: ssMax, label: 'допустимый SS'}, {y: 60, label: 'идеал 60 мВ/дек', good: true}]} />
-          <Text type="supporting" color="secondary">60 мВ/дек — физический идеал при комнатной температуре. На коротком затворе сток «перебивает» затвор и SS растёт. Тонкий 2D-канал держится дольше.</Text>
+        <Section title={t('Качество выключения (SS)')}>
+          <MultiLine series={ssSeries} xLabel={t('Длина затвора, нм')} yDomain={[55, 160]} refs={[{y: ssMax, label: t('допустимый SS')}, {y: 60, label: t('идеал 60 мВ/дек'), good: true}]} />
+          <Text type="supporting" color="secondary">{t('60 мВ/дек — физический идеал при комнатной температуре. На коротком затворе сток «перебивает» затвор и SS растёт. Тонкий 2D-канал держится дольше.')}</Text>
         </Section>
       </Grid>
-      <Note status="success" title="Вывод" text="Главные рычаги физики — тяжёлая эффективная масса электрона и канал толщиной в несколько атомов. Поэтому 2D-полупроводники (MoS₂, WSe₂, WS₂) позволяют затвор ≈ 3–4 нм, а кремний ≈ 9–10 нм. Но затвор — лишь часть шага транзистора: спейсеры и контакт занимают больше места." />
+      <Note status="success" title={t('Вывод')} text={t('Главные рычаги физики — тяжёлая эффективная масса электрона и канал толщиной в несколько атомов. Поэтому 2D-полупроводники (MoS₂, WSe₂, WS₂) позволяют затвор ≈ 3–4 нм, а кремний ≈ 9–10 нм. Но затвор — лишь часть шага транзистора: спейсеры и контакт занимают больше места.')} />
     </VStack>
   );
 }

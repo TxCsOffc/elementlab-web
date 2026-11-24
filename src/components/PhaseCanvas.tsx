@@ -1,5 +1,7 @@
 import {useMemo, useRef, useState} from 'react';
 import {Card} from '@astryxdesign/core/Card';
+import {VStack, HStack} from '@astryxdesign/core/Stack';
+import {Button} from '@astryxdesign/core/Button';
 import {useCanvas} from './useCanvas';
 import {useTok} from './ui';
 import {useStore} from '../store';
@@ -8,6 +10,7 @@ import {
   type DiagramRange, type Phase, type PhaseModel,
 } from '../lib/phase';
 import {decadeLabel, num, pressure, tempBoth} from '../lib/fmt';
+import {t} from '../i18n';
 
 export function parseColor(c: string): [number, number, number] {
   const s = c.trim();
@@ -127,7 +130,7 @@ export default function PhaseCanvas({model, compact = false, height = 500}: {mod
       ctx.setLineDash([2, 3]); ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(plot.x, Y(1)); ctx.lineTo(plot.x + plot.w, Y(1)); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.font = font(11, 600); ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-      ctx.fillText('1 атм — обычное давление', plot.x + 8, Y(1) - 3);
+      ctx.fillText(t('1 атм — обычное давление'), plot.x + 8, Y(1) - 3);
     }
 
     // подписи фаз
@@ -152,8 +155,8 @@ export default function PhaseCanvas({model, compact = false, height = 500}: {mod
       ctx.beginPath(); ctx.arc(X(t), Y(p), rad, 0, 7); ctx.fillStyle = 'white'; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
       if (!compact) { ctx.font = font(11, 700); ctx.fillStyle = 'white'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 2; ctx.fillText(label, X(t) + 9, Y(p) + 2); ctx.shadowBlur = 0; }
     };
-    if (!model.heliumLike) dot(model.tt, model.pt, 'тройная точка');
-    dot(model.tc, model.pc, 'критическая точка');
+    if (!model.heliumLike) dot(model.tt, model.pt, t('тройная точка'));
+    dot(model.tc, model.pc, t('критическая точка'));
 
     // маркер условий
     const tm = store.tempK, pm = store.pressure;
@@ -174,18 +177,18 @@ export default function PhaseCanvas({model, compact = false, height = 500}: {mod
     }
     if (!compact) {
       ctx.font = font(12.5, 600);
-      ctx.fillText(store.celsius ? 'Температура, °C' : 'Температура, K', plot.x + plot.w / 2, plot.y + plot.h + 32);
+      ctx.fillText(store.celsius ? t('Температура, °C') : t('Температура, K'), plot.x + plot.w / 2, plot.y + plot.h + 32);
       ctx.save(); ctx.translate(16, plot.y + plot.h / 2); ctx.rotate(-Math.PI / 2); ctx.textBaseline = 'middle';
-      ctx.fillText('Давление, атмосфер (логарифмическая шкала)', 0, 0); ctx.restore();
+      ctx.fillText(t('Давление, атмосфер (логарифмическая шкала)'), 0, 0); ctx.restore();
     }
 
     // подсказка при наведении
     if (hover && !compact) {
       const [hx, hy] = hover;
-      const t = r.tMin + ((hx - plot.x) / plot.w) * (r.tMax - r.tMin);
+      const tk = r.tMin + ((hx - plot.x) / plot.w) * (r.tMax - r.tMin);
       const p = 10 ** (r.logPMax - ((hy - plot.y) / plot.h) * (r.logPMax - r.logPMin));
-      const ph = phaseAt(model, t, p);
-      const lines = [PHASE_TITLE[ph], tempBoth(t), pressure(p), 'щелчок — поставить маркер'];
+      const ph = phaseAt(model, tk, p);
+      const lines = [PHASE_TITLE[ph], tempBoth(tk), pressure(p), t('щелчок — поставить маркер')];
       const bw = 210, bh = 84, bx = Math.min(hx + 16, plot.x + plot.w - bw), by = Math.max(hy - bh - 8, plot.y);
       ctx.fillStyle = tok('--color-background-card'); ctx.strokeStyle = tok('--color-border');
       ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 10;
@@ -204,17 +207,25 @@ export default function PhaseCanvas({model, compact = false, height = 500}: {mod
     return [range.tMin + ((x - p.x) / p.w) * (range.tMax - range.tMin), 10 ** (range.logPMax - ((y - p.y) / p.h) * (range.logPMax - range.logPMin))];
   };
 
+  const exportPng = () => {
+    const cv = ref.current; if (!cv) return;
+    const a = document.createElement('a');
+    a.href = cv.toDataURL('image/png'); a.download = `phase-diagram-${model.name}.png`; a.click();
+  };
   return (
+    <VStack gap={2}>
     <Card padding={0} height={height} variant="transparent">
       <canvas
         ref={ref}
         style={{width: '100%', height: '100%', cursor: compact ? 'default' : 'crosshair', display: 'block'}}
-        aria-label={`Фазовая диаграмма: ${model.name}`}
+        aria-label={t('Фазовая диаграмма: {0}', model.name)}
         onMouseMove={(e) => { if (compact) return; const b = e.currentTarget.getBoundingClientRect(); const x = e.clientX - b.left, y = e.clientY - b.top; setHover(toTP(x, y) ? [x, y] : null); }}
         onMouseLeave={() => setHover(null)}
         onClick={(e) => { const b = e.currentTarget.getBoundingClientRect(); const tp = toTP(e.clientX - b.left, e.clientY - b.top); if (tp) { store.setTempK(tp[0]); store.setPressure(tp[1]); } }}
       />
     </Card>
+    {!compact && <HStack hAlign="end"><Button label={t('Скачать PNG')} size="sm" variant="secondary" onClick={exportPng} /></HStack>}
+    </VStack>
   );
 }
 

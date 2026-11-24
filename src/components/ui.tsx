@@ -11,6 +11,7 @@ import {Popover} from '@astryxdesign/core/Popover';
 import {Button} from '@astryxdesign/core/Button';
 import {Badge} from '@astryxdesign/core/Badge';
 import {forCard} from '../lib/glossary';
+import {t} from '../i18n';
 
 type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -34,7 +35,7 @@ export function PageHeader({icon, title, subtitle}: {icon: IconType; title: stri
   );
 }
 
-export function Note({title = 'Как читать', text, status = 'info'}: {title?: string; text: ReactNode; status?: 'info' | 'warning' | 'success' | 'error'}) {
+export function Note({title = t('Как читать'), text, status = 'info'}: {title?: string; text: ReactNode; status?: 'info' | 'warning' | 'success' | 'error'}) {
   return <Banner status={status} title={title} description={text} collapsible={false} />;
 }
 
@@ -72,7 +73,7 @@ export function ExplainButton({title, text}: {title: string; text: string}) {
   return (
     <Popover label={title} placement="below" alignment="end" width={380} padding={4}
       content={<VStack gap={2}><Text weight="semibold" color="accent">{title}</Text><Text>{text}</Text></VStack>}>
-      <Button label="Объясни просто" variant="primary" size="sm" />
+      <Button label={t('Объясни просто')} variant="primary" size="sm" />
     </Popover>
   );
 }

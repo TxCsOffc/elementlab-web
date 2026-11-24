@@ -1,4 +1,8 @@
-const nf = (d: number) => new Intl.NumberFormat('ru-RU', {maximumFractionDigits: d});
+import {t} from '../i18n';
+import {lang} from '../i18n';
+
+const LOCALE = lang === 'en' ? 'en-US' : 'ru-RU';
+const nf = (d: number) => new Intl.NumberFormat(LOCALE, {maximumFractionDigits: d});
 
 export const num = (x: number, digits = 2) => nf(Math.max(0, digits)).format(x);
 
@@ -13,13 +17,13 @@ export function sci(x: number, digits = 1): string {
   return (m === '1' ? '' : m + '·') + '10' + sup(e);
 }
 
-export const pressure = (atm: number) => sci(atm, 2) + ' атм';
+export const pressure = (atm: number) => sci(atm, 2) + t(' атм');
 export const temp = (k: number, celsius = true) =>
   celsius ? num(k - 273.15, k < 100 ? 2 : 0) + ' °C' : num(k, k < 100 ? 2 : 0) + ' K';
 export const tempBoth = (k: number) => num(k - 273.15, k < 100 ? 2 : 0) + ' °C · ' + num(k, k < 100 ? 2 : 0) + ' K';
 
 export function decadeLabel(e: number): string {
   if (e >= 0 && e <= 6) return nf(0).format(10 ** e);
-  if (e < 0 && e >= -3) return '0,' + '0'.repeat(-e - 1) + '1';
+  if (e < 0 && e >= -3) return (lang === 'en' ? '0.' : '0,') + '0'.repeat(-e - 1) + '1';
   return '10' + sup(e);
 }

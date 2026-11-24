@@ -9,6 +9,7 @@ import {EmptyState} from '@astryxdesign/core/EmptyState';
 import {BookOpenIcon, MagnifyingGlassIcon} from '../components/icons';
 import {PageHeader} from '../components/ui';
 import {TERMS} from '../lib/glossary';
+import {t} from '../i18n';
 
 export default function GlossaryPage() {
   const [q, setQ] = useState('');
@@ -16,8 +17,8 @@ export default function GlossaryPage() {
     .sort((a, b) => a[0].localeCompare(b[0], 'ru'));
   return (
     <VStack gap={6}>
-      <PageHeader icon={BookOpenIcon} title="Словарь простыми словами" subtitle="Все сложные термины — коротко и на примерах из жизни. Значок «i» у заголовков карточек открывает эти же объяснения." />
-      <TextInput label="Найти термин" type="search" value={q} onChange={setQ} startIcon={MagnifyingGlassIcon} placeholder="Например: плазма" />
+      <PageHeader icon={BookOpenIcon} title={t('Словарь простыми словами')} subtitle={t('Все сложные термины — коротко и на примерах из жизни. Значок «i» у заголовков карточек открывает эти же объяснения.')} />
+      <TextInput label={t('Найти термин')} type="search" value={q} onChange={setQ} startIcon={MagnifyingGlassIcon} placeholder={t('Например: плазма')} />
       {items.length ? (
         <Grid columns={{minWidth: 320, max: 2, repeat: 'fit'}} gap={3}>
           {items.map(([t, d]) => (
@@ -26,7 +27,7 @@ export default function GlossaryPage() {
             </Card>
           ))}
         </Grid>
-      ) : <EmptyState title="Ничего не найдено" description="Попробуйте другое слово." />}
+      ) : <EmptyState title={t('Ничего не найдено')} description={t('Попробуйте другое слово.')} />}
     </VStack>
   );
 }

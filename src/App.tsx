@@ -5,12 +5,15 @@ import {Text} from '@astryxdesign/core/Text';
 import {Icon} from '@astryxdesign/core/Icon';
 import {
   PlayCircleIcon, Squares2X2Icon, ChartBarIcon, SparklesIcon, AtomIcon, CpuChipIcon, ShareIcon,
-  SunIcon, WrenchScrewdriverIcon, BookOpenIcon, InformationCircleIcon, BeakerIcon,
+  SunIcon, WrenchScrewdriverIcon, BookOpenIcon, InformationCircleIcon, BeakerIcon, ClockIcon,
 } from './components/icons';
 import {lazy, Suspense} from 'react';
 import {Spinner} from '@astryxdesign/core/Spinner';
 import {StoreProvider, useStore, type PageId} from './store';
 const SimsPage = lazy(() => import('./pages/SimsPage'));
+const AtomPage = lazy(() => import('./pages/AtomPage'));
+const PropertyMapPage = lazy(() => import('./pages/PropertyMapPage'));
+const MoorePage = lazy(() => import('./pages/MoorePage'));
 const TablePage = lazy(() => import('./pages/TablePage'));
 const PhasePage = lazy(() => import('./pages/PhasePage'));
 const StatesPage = lazy(() => import('./pages/StatesPage'));
@@ -23,28 +26,38 @@ const GlossaryPage = lazy(() => import('./pages/GlossaryPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 
 import {ExplainButton} from './components/ui';
+import {HStack} from '@astryxdesign/core/Stack';
+import {SegmentedControl, SegmentedControlItem} from '@astryxdesign/core/SegmentedControl';
+import {lang, setLang} from './i18n';
 import {PAGE_EXPLAIN} from './lib/glossary';
+import {t} from './i18n';
 
 export const PAGES: {id: PageId; title: string; icon: typeof PlayCircleIcon; section: string}[] = [
-  {id: 'sims', title: 'Симуляции', icon: PlayCircleIcon, section: 'Наглядно'},
-  {id: 'table', title: 'Таблица элементов', icon: Squares2X2Icon, section: 'Материалы'},
-  {id: 'phase', title: 'Фазовые диаграммы', icon: ChartBarIcon, section: 'Материалы'},
-  {id: 'states', title: 'Состояния вещества', icon: SparklesIcon, section: 'Материалы'},
-  {id: 'nucleus', title: 'Ядро и кварки', icon: AtomIcon, section: 'Материалы'},
-  {id: 'channel', title: 'Канал транзистора', icon: CpuChipIcon, section: 'Транзистор'},
-  {id: 'wires', title: 'Межсоединения', icon: ShareIcon, section: 'Транзистор'},
-  {id: 'litho', title: 'Литография', icon: SunIcon, section: 'Производство'},
-  {id: 'process', title: 'Поиск техпроцесса', icon: WrenchScrewdriverIcon, section: 'Производство'},
-  {id: 'glossary', title: 'Словарь простыми словами', icon: BookOpenIcon, section: 'Справка'},
-  {id: 'about', title: 'Модели и источники', icon: InformationCircleIcon, section: 'Справка'},
+  {id: 'sims', title: t('Симуляции'), icon: PlayCircleIcon, section: t('Наглядно')},
+  {id: 'table', title: t('Таблица элементов'), icon: Squares2X2Icon, section: t('Материалы')},
+  {id: 'atom', title: t('Строение атома'), icon: AtomIcon, section: t('Материалы')},
+  {id: 'propmap', title: t('Карта свойств'), icon: ChartBarIcon, section: t('Материалы')},
+  {id: 'phase', title: t('Фазовые диаграммы'), icon: ChartBarIcon, section: t('Материалы')},
+  {id: 'states', title: t('Состояния вещества'), icon: SparklesIcon, section: t('Материалы')},
+  {id: 'nucleus', title: t('Ядро и кварки'), icon: AtomIcon, section: t('Материалы')},
+  {id: 'channel', title: t('Канал транзистора'), icon: CpuChipIcon, section: t('Транзистор')},
+  {id: 'wires', title: t('Межсоединения'), icon: ShareIcon, section: t('Транзистор')},
+  {id: 'litho', title: t('Литография'), icon: SunIcon, section: t('Производство')},
+  {id: 'process', title: t('Поиск техпроцесса'), icon: WrenchScrewdriverIcon, section: t('Производство')},
+  {id: 'moore', title: t('Закон Мура'), icon: ClockIcon, section: t('Производство')},
+  {id: 'glossary', title: t('Словарь простыми словами'), icon: BookOpenIcon, section: t('Справка')},
+  {id: 'about', title: t('Модели и источники'), icon: InformationCircleIcon, section: t('Справка')},
 ];
 
-const SECTIONS = ['Наглядно', 'Материалы', 'Транзистор', 'Производство', 'Справка'];
+const SECTIONS = [t('Наглядно'), t('Материалы'), t('Транзистор'), t('Производство'), t('Справка')];
 
 function Page() {
   const {page} = useStore();
   switch (page) {
     case 'table': return <TablePage />;
+    case 'atom': return <AtomPage />;
+    case 'propmap': return <PropertyMapPage />;
+    case 'moore': return <MoorePage />;
     case 'phase': return <PhasePage />;
     case 'states': return <StatesPage />;
     case 'nucleus': return <NucleusPage />;
@@ -67,11 +80,19 @@ function Shell() {
       topNav={
         <TopNav
           heading={<Text weight="semibold">{current.title}</Text>}
-          endContent={<ExplainButton title={current.title} text={PAGE_EXPLAIN[current.id] ?? ''} />}
+          endContent={
+            <HStack gap={3} vAlign="center">
+              <SegmentedControl label="Language / Язык" value={lang} onChange={(v) => setLang(v as 'ru' | 'en')} size="sm">
+                <SegmentedControlItem value="ru" label="RU" />
+                <SegmentedControlItem value="en" label="EN" />
+              </SegmentedControl>
+              <ExplainButton title={current.title} text={PAGE_EXPLAIN[current.id] ?? ''} />
+            </HStack>
+          }
         />
       }
       sideNav={
-        <SideNav header={<SideNavHeading heading="ElementLab" subheading="материалы для чипов" icon={<Icon icon={BeakerIcon} size="md" color="accent" />} />}>
+        <SideNav header={<SideNavHeading heading="ElementLab" subheading={t('материалы для чипов')} icon={<Icon icon={BeakerIcon} size="md" color="accent" />} />}>
           {SECTIONS.map((s) => (
             <SideNavSection key={s} title={s}>
               {PAGES.filter((p) => p.section === s).map((p) => (

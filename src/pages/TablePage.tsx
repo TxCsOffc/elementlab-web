@@ -19,24 +19,25 @@ import {SC_TC, SC_USE, BEC, FERMI, SUPERSOLID, SUPERFLUID, CLOCKS, FAB_PLASMA} f
 import {containing} from '../lib/compounds';
 import {neutrons, upQuarks, downQuarks, stability} from '../lib/nuclear';
 import {num, pressure, sci, temp, tempBoth} from '../lib/fmt';
+import {t} from '../i18n';
 
 type Mode = 'phase' | 'category' | 'abundance' | 'melting' | 'sc' | 'quantum';
-const MODES: [Mode, string][] = [['phase', 'Состояние'], ['category', 'Группы'], ['abundance', 'Доступность'], ['melting', 'Тугоплавкость'], ['sc', 'Сверхпроводимость'], ['quantum', 'Квантовые']];
+const MODES: [Mode, string][] = [['phase', t('Состояние')], ['category', t('Группы')], ['abundance', t('Доступность')], ['melting', t('Тугоплавкость')], ['sc', t('Сверхпроводимость')], ['quantum', t('Квантовые')]];
 
 const PRESETS: [string, number, number][] = [
-  ['Комната', 298.15, 1], ['ALD · 300 °C · 1 торр', 573.15, 1 / 760], ['Предел BEOL · 400 °C', 673.15, 1],
-  ['Рост 2D · 800 °C · 10 торр', 1073.15, 10 / 760], ['Эпитаксия Si · 650 °C', 923.15, 0.02], ['Напыление · 1500 °C · вакуум', 1773.15, 1e-9],
+  [t('Комната'), 298.15, 1], [t('ALD · 300 °C · 1 торр'), 573.15, 1 / 760], [t('Предел BEOL · 400 °C'), 673.15, 1],
+  [t('Рост 2D · 800 °C · 10 торр'), 1073.15, 10 / 760], [t('Эпитаксия Si · 650 °C'), 923.15, 0.02], [t('Напыление · 1500 °C · вакуум'), 1773.15, 1e-9],
 ];
 
 const ramp = (name: string, f: number) => `var(--color-data-${name}-${Math.max(1, Math.min(5, 1 + Math.round(f * 4)))})`;
 const darkText = 'var(--color-data-gray-5)';
 
-function cellStyle(e: Element, mode: Mode, t: number, p: number): {fill: string; sub: string; dark?: boolean} {
+function cellStyle(e: Element, mode: Mode, tK: number, p: number): {fill: string; sub: string; dark?: boolean} {
   switch (mode) {
     case 'phase': {
       const m = modelFor(e.z);
       if (!m) return {fill: phaseColor('unknown'), sub: '?'};
-      const ph = phaseAt(m, t, p);
+      const ph = phaseAt(m, tK, p);
       return {fill: phaseColor(ph), sub: PHASE_SHORT[ph]};
     }
     case 'category': return {fill: CATEGORY_COLOR[e.category], sub: e.name};
@@ -58,10 +59,10 @@ function cellStyle(e: Element, mode: Mode, t: number, p: number): {fill: string;
     }
     case 'quantum': {
       const clock = !!CLOCKS[e.z], cond = !!(BEC[e.z] || SUPERFLUID[e.z] || FERMI[e.z]);
-      const tags = [clock && 'часы', BEC[e.z] && 'БЭК', SUPERFLUID[e.z] && 'св.тек'].filter(Boolean).join('+');
+      const tags = [clock && t('часы'), BEC[e.z] && t('БЭК'), SUPERFLUID[e.z] && t('св.тек')].filter(Boolean).join('+');
       if (clock && cond) return {fill: 'var(--color-data-categorical-orange)', sub: tags};
       if (clock) return {fill: 'var(--color-data-yellow-4)', sub: tags};
-      if (cond) return {fill: 'var(--color-data-categorical-cyan)', sub: tags || 'ферми'};
+      if (cond) return {fill: 'var(--color-data-categorical-cyan)', sub: tags || t('ферми')};
       return {fill: 'var(--color-data-gray-2)', sub: '—', dark: true};
     }
   }
@@ -72,7 +73,7 @@ function PeriodicSvg({mode, hover, setHover}: {mode: Mode; hover: number | null;
   const C = 10, G = 0.7; // условные единицы viewBox
   const W = 18 * C + 17 * G, H = 9.4 * C + 9 * G;
   return (
-    <svg viewBox={`-1 -1 ${W + 2} ${H + 2}`} width="100%" role="img" aria-label="Периодическая таблица" style={{display: 'block', overflow: 'visible'}}>
+    <svg viewBox={`-1 -1 ${W + 2} ${H + 2}`} width="100%" role="img" aria-label={t('Периодическая таблица')} style={{display: 'block', overflow: 'visible'}}>
       {[['57–71', 5], ['89–103', 6]].map(([label, r]) => (
         <g key={label as string} transform={`translate(${2 * (C + G)}, ${(r as number) * (C + G)})`}>
           <rect width={C} height={C} rx={1.4} style={{fill: 'none', stroke: 'var(--color-border)', strokeDasharray: '1 1', strokeWidth: 0.2}} />
@@ -104,18 +105,18 @@ function PeriodicSvg({mode, hover, setHover}: {mode: Mode; hover: number | null;
 function Detail({z}: {z: number}) {
   const s = useStore();
   const e = element(z);
-  if (!e) return <Text color="secondary">Выберите элемент</Text>;
+  if (!e) return <Text color="secondary">{t('Выберите элемент')}</Text>;
   const m = modelFor(e.z);
   const ph = m ? phaseAt(m, s.tempK, s.pressure) : undefined;
   const pv = m ? gasBoundary(m, s.tempK) : 0;
   const pa = pv * 101325;
-  const vol = pa < 1e-7 ? 'Практически не испаряется — не загрязняет вакуумную камеру.' : pa < 1e-2 ? 'Слабо летуч: при долгом нагреве в вакууме понемногу испаряется.' : pa < 100 ? 'Заметно летуч — годится для напыления испарением, но опасен как загрязнитель.' : 'Сильно летуч или газ при этих условиях.';
+  const vol = pa < 1e-7 ? t('Практически не испаряется — не загрязняет вакуумную камеру.') : pa < 1e-2 ? t('Слабо летуч: при долгом нагреве в вакууме понемногу испаряется.') : pa < 100 ? t('Заметно летуч — годится для напыления испарением, но опасен как загрязнитель.') : t('Сильно летуч или газ при этих условиях.');
   const exotic: string[] = [];
-  if (SC_TC[z] !== undefined) exotic.push(`Сверхпроводник ниже ${SC_TC[z] < 0.01 ? sci(SC_TC[z], 1) : num(SC_TC[z], 2)} K.` + (SC_USE[z] ? ' ' + SC_USE[z] : ''));
+  if (SC_TC[z] !== undefined) exotic.push(t('Сверхпроводник ниже {0} K.', SC_TC[z] < 0.01 ? sci(SC_TC[z], 1) : num(SC_TC[z], 2)) + (SC_USE[z] ? ' ' + SC_USE[z] : ''));
   if (SUPERFLUID[z]) exotic.push(SUPERFLUID[z]);
-  if (BEC[z]) exotic.push(`Конденсат Бозе–Эйнштейна: ${BEC[z][1]}, ${BEC[z][0]}.`);
-  if (FERMI[z]) exotic.push(`Фермионный конденсат: ${FERMI[z]}.`);
-  if (SUPERSOLID[z]) exotic.push(`Сверхтвёрдое тело: ${SUPERSOLID[z]}.`);
+  if (BEC[z]) exotic.push(t('Конденсат Бозе–Эйнштейна: {0}, {1}.', BEC[z][1], BEC[z][0]));
+  if (FERMI[z]) exotic.push(t('Фермионный конденсат: {0}.', FERMI[z]));
+  if (SUPERSOLID[z]) exotic.push(t('Сверхтвёрдое тело: {0}.', SUPERSOLID[z]));
   if (CLOCKS[z]) exotic.push(CLOCKS[z]);
   if (FAB_PLASMA[z]) exotic.push(FAB_PLASMA[z]);
   const comps = containing(z);
@@ -132,59 +133,59 @@ function Detail({z}: {z: number}) {
         <VStack gap={1}>
           <Heading level={2}>{e.name}</Heading>
           <Badge label={CATEGORY_TITLE[e.category]} variant="blue" />
-          <Text type="supporting" color="secondary">{num(e.mass, 3)} а.е.м.</Text>
+          <Text type="supporting" color="secondary">{num(e.mass, 3)} {t('а.е.м.')}</Text>
         </VStack>
       </HStack>
       {m && ph && (
-        <Section title="При выбранных условиях">
-          <Stat label="Состояние" value={PHASE_TITLE[ph]} tone="accent" />
-          <Stat label="Давление насыщенного пара" value={pressure(pv)} />
+        <Section title={t('При выбранных условиях')}>
+          <Stat label={t('Состояние')} value={PHASE_TITLE[ph]} tone="accent" />
+          <Stat label={t('Давление насыщенного пара')} value={pressure(pv)} />
           <Text type="supporting" color="secondary">{vol}</Text>
           <PhaseCanvas model={m} modelKey={z} compact height={190} />
-          <Button label="Открыть фазовую диаграмму" variant="primary" onClick={() => s.go('phase', z)} />
+          <Button label={t('Открыть фазовую диаграмму')} variant="primary" onClick={() => s.go('phase', z)} />
         </Section>
       )}
       {exotic.length > 0 && (
-        <Section title="Особые состояния и применения">
+        <Section title={t('Особые состояния и применения')}>
           {exotic.map((t) => <Text key={t}>• {t}</Text>)}
         </Section>
       )}
       {comps.length > 0 && (
-        <Section title="Входит в состав">
+        <Section title={t('Входит в состав')}>
           <HStack gap={2} wrap="wrap">
             {comps.map((c) => <Button key={c.id} label={`${c.formula} · ${c.name}`} size="sm" variant="secondary" onClick={() => s.go('phase', c.id)} />)}
           </HStack>
         </Section>
       )}
-      <Section title="Ядро">
+      <Section title={t('Ядро')}>
         <HStack gap={4} wrap="wrap">
-          <Stat label="Протонов" value={e.z} />
-          <Stat label="Нейтронов" value={'≈ ' + neutrons(e)} />
-          <Stat label="Кварков u/d" value={`${upQuarks(e)}/${downQuarks(e)}`} />
+          <Stat label={t('Протонов')} value={e.z} />
+          <Stat label={t('Нейтронов')} value={'≈ ' + neutrons(e)} />
+          <Stat label={t('Кварков u/d')} value={`${upQuarks(e)}/${downQuarks(e)}`} />
         </HStack>
         <Badge variant={stTone} label={stText} />
-        <Button label="Подробнее о ядре" variant="ghost" size="sm" onClick={() => s.go('nucleus', z)} />
+        <Button label={t('Подробнее о ядре')} variant="ghost" size="sm" onClick={() => s.go('nucleus', z)} />
       </Section>
-      <Section title="Свойства">
+      <Section title={t('Свойства')}>
         <VStack gap={1.5}>
-          {([['Плавление', e.melt !== undefined ? temp(e.melt) : undefined], [e.z === 6 || e.z === 33 ? 'Возгонка' : 'Кипение', e.boil !== undefined ? temp(e.boil) : undefined],
-            ['Плотность', e.density !== undefined ? num(e.density, 4) + ' г/см³' : undefined], ['Электроотриц.', e.en !== undefined ? num(e.en, 2) : undefined],
-            ['Радиус атома', e.radius !== undefined ? num(e.radius, 0) + ' пм' : undefined], ['В земной коре', e.abundance !== undefined ? sci(e.abundance, 2) + ' ppm' : undefined]] as [string, string | undefined][])
+          {([[t('Плавление'), e.melt !== undefined ? temp(e.melt) : undefined], [e.z === 6 || e.z === 33 ? t('Возгонка') : t('Кипение'), e.boil !== undefined ? temp(e.boil) : undefined],
+            [t('Плотность'), e.density !== undefined ? num(e.density, 4) + t(' г/см³') : undefined], [t('Электроотриц.'), e.en !== undefined ? num(e.en, 2) : undefined],
+            [t('Радиус атома'), e.radius !== undefined ? num(e.radius, 0) + t(' пм') : undefined], [t('В земной коре'), e.abundance !== undefined ? sci(e.abundance, 2) + ' ppm' : undefined]] as [string, string | undefined][])
             .map(([k, v]) => (
               <HStack key={k} hAlign="between" gap={2}>
                 <Text type="supporting" color="secondary">{k}</Text>
-                <Text type="supporting" weight="medium" hasTabularNumbers>{v ?? 'нет данных'}</Text>
+                <Text type="supporting" weight="medium" hasTabularNumbers>{v ?? t('нет данных')}</Text>
               </HStack>
             ))}
         </VStack>
       </Section>
       {d && (
-        <Section title="Насколько это мало">
+        <Section title={t('Насколько это мало')}>
           <HStack gap={5}>
-            <Stat label="Диаметр атома" value={num(d, 3) + ' нм'} />
-            <Stat label="Атомов в 1 нм" value={'≈ ' + num(1 / d, 1)} />
+            <Stat label={t('Диаметр атома')} value={num(d, 3) + t(' нм')} />
+            <Stat label={t('Атомов в 1 нм')} value={'≈ ' + num(1 / d, 1)} />
           </HStack>
-          <Text type="supporting" color="secondary">«1 нм» в названии техпроцесса — маркетинг: шаг затворов у таких чипов ≈ 40–45 нм, то есть ≈ {Math.round(42 / d)} атомов {e.symbol} в ряд.</Text>
+          <Text type="supporting" color="secondary">{t('«1 нм» в названии техпроцесса — маркетинг: шаг затворов у таких чипов ≈ 40–45 нм, то есть ≈')} {Math.round(42 / d)} {t('атомов')} {e.symbol} {t('в ряд.')}</Text>
         </Section>
       )}
     </VStack>
@@ -196,50 +197,50 @@ export default function TablePage() {
   const [mode, setMode] = useState<Mode>('phase');
   const [hover, setHover] = useState<number | null>(null);
 
-  const legend: [string, string][] = mode === 'phase' ? [...ALL_PHASES.map((p) => [PHASE_TITLE[p], phaseColor(p)] as [string, string]), ['нет данных', phaseColor('unknown')]]
+  const legend: [string, string][] = mode === 'phase' ? [...ALL_PHASES.map((p) => [PHASE_TITLE[p], phaseColor(p)] as [string, string]), [t('нет данных'), phaseColor('unknown')]]
     : mode === 'category' ? (Object.keys(CATEGORY_TITLE) as Category[]).map((c) => [CATEGORY_TITLE[c], CATEGORY_COLOR[c]])
-    : mode === 'quantum' ? [['атомные часы', 'var(--color-data-yellow-4)'], ['конденсаты / сверхтекучесть', 'var(--color-data-categorical-cyan)'], ['и то и другое', 'var(--color-data-categorical-orange)']]
-    : mode === 'abundance' ? [1, 3, 5].map((k) => [k === 1 ? 'редкий' : k === 3 ? 'средне' : 'распространённый', `var(--color-data-orange-${k})`])
-    : mode === 'melting' ? [1, 3, 5].map((k) => [k === 1 ? 'легкоплавкий' : k === 3 ? 'средне' : 'тугоплавкий', `var(--color-data-red-${k})`])
+    : mode === 'quantum' ? [[t('атомные часы'), 'var(--color-data-yellow-4)'], [t('конденсаты / сверхтекучесть'), 'var(--color-data-categorical-cyan)'], [t('и то и другое'), 'var(--color-data-categorical-orange)']]
+    : mode === 'abundance' ? [1, 3, 5].map((k) => [k === 1 ? t('редкий') : k === 3 ? t('средне') : t('распространённый'), `var(--color-data-orange-${k})`])
+    : mode === 'melting' ? [1, 3, 5].map((k) => [k === 1 ? t('легкоплавкий') : k === 3 ? t('средне') : t('тугоплавкий'), `var(--color-data-red-${k})`])
     : [2, 4, 5].map((k) => [k === 2 ? 'T_c ≈ 0,001 K' : k === 4 ? '≈ 1 K' : '≈ 10 K', `var(--color-data-blue-${k})`]);
 
   const note: Record<Mode, string> = {
     phase: '',
     category: '',
-    abundance: 'Сколько элемента в земной коре (ppm по массе). Массовое производство дёшево масштабируется на распространённых элементах: Si, Al, Ti, Mo — да; Ru, Rh, Ir, Te — дефицит.',
-    melting: 'Температура плавления при 1 атм. Чем тугоплавче металл проводника, тем медленнее его разрушает электромиграция.',
-    sc: 'Элементы, которые при обычном давлении становятся сверхпроводниками. Рекорд среди элементов — ниобий (9,25 K); он, алюминий и тантал — основа сверхпроводящих кубитов.',
-    quantum: 'Атомы, из которых получены конденсаты Бозе–Эйнштейна, и атомы самых точных часов (Cs задаёт секунду, Sr, Yb и ион Al⁺ дают ~10⁻¹⁸).',
+    abundance: t('Сколько элемента в земной коре (ppm по массе). Массовое производство дёшево масштабируется на распространённых элементах: Si, Al, Ti, Mo — да; Ru, Rh, Ir, Te — дефицит.'),
+    melting: t('Температура плавления при 1 атм. Чем тугоплавче металл проводника, тем медленнее его разрушает электромиграция.'),
+    sc: t('Элементы, которые при обычном давлении становятся сверхпроводниками. Рекорд среди элементов — ниобий (9,25 K); он, алюминий и тантал — основа сверхпроводящих кубитов.'),
+    quantum: t('Атомы, из которых получены конденсаты Бозе–Эйнштейна, и атомы самых точных часов (Cs задаёт секунду, Sr, Yb и ион Al⁺ дают ~10⁻¹⁸).'),
   };
 
   return (
     <VStack gap={6}>
-      <PageHeader icon={Squares2X2Icon} title="118 элементов" subtitle="Задайте температуру и давление — таблица покажет, в каком состоянии каждый элемент. Двойной щелчок открывает фазовую диаграмму." />
+      <PageHeader icon={Squares2X2Icon} title={t('118 элементов')} subtitle={t('Задайте температуру и давление — таблица покажет, в каком состоянии каждый элемент. Двойной щелчок открывает фазовую диаграмму.')} />
       <Grid columns={{minWidth: 340, max: 2, repeat: 'fit'}} gap={4}>
         <Card padding={4}>
           <VStack gap={2}>
-            <Text type="supporting" color="secondary">Температура</Text>
+            <Text type="supporting" color="secondary">{t('Температура')}</Text>
             <Heading level={2}>{tempBoth(s.tempK)}</Heading>
-            <Slider label="Температура" isLabelHidden value={s.tempK} min={1} max={6500} step={1} onChange={(v: number) => s.setTempK(v as number)} formatValue={(v: number) => temp(v)} />
+            <Slider label={t('Температура')} isLabelHidden value={s.tempK} min={1} max={6500} step={1} onChange={(v: number) => s.setTempK(v as number)} formatValue={(v: number) => temp(v)} />
           </VStack>
         </Card>
         <Card padding={4}>
           <VStack gap={2}>
-            <Text type="supporting" color="secondary">Давление</Text>
+            <Text type="supporting" color="secondary">{t('Давление')}</Text>
             <Heading level={2}>{pressure(s.pressure)}</Heading>
-            <Slider label="Давление (логарифм)" isLabelHidden value={Math.log10(s.pressure)} min={-12} max={6} step={0.05} onChange={(v: number) => s.setPressure(10 ** (v as number))} formatValue={(v: number) => pressure(10 ** v)} />
+            <Slider label={t('Давление (логарифм)')} isLabelHidden value={Math.log10(s.pressure)} min={-12} max={6} step={0.05} onChange={(v: number) => s.setPressure(10 ** (v as number))} formatValue={(v: number) => pressure(10 ** v)} />
           </VStack>
         </Card>
       </Grid>
       <HStack gap={2} wrap="wrap" vAlign="center">
-        <Text type="supporting" color="secondary">Условия процессов:</Text>
+        <Text type="supporting" color="secondary">{t('Условия процессов:')}</Text>
         {PRESETS.map(([name, t, p]) => <Button key={name} label={name} size="sm" variant="secondary" onClick={() => { s.setTempK(t); s.setPressure(p); }} />)}
       </HStack>
 
       <HStack gap={6} vAlign="start" wrap="wrap">
         <StackItem size="fill">
         <VStack gap={4}>
-          <SegmentedControl label="Раскраска таблицы" value={mode} onChange={(v) => setMode(v as Mode)} size="sm">
+          <SegmentedControl label={t('Раскраска таблицы')} value={mode} onChange={(v) => setMode(v as Mode)} size="sm">
             {MODES.map(([id, t]) => <SegmentedControlItem key={id} value={id} label={t} />)}
           </SegmentedControl>
           <PeriodicSvg mode={mode} hover={hover} setHover={setHover} />

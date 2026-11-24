@@ -1,3 +1,4 @@
+import {t} from '../i18n';
 // Физика симуляций (перенос из Swift-версии)
 
 // ── 1. Молекулярная динамика: потенциал Леннард-Джонса, термостат Берендсена ──
@@ -66,16 +67,16 @@ export class ParticleSim {
   get ionized() { return Math.max(0, Math.min(1, (this.targetT - 2.2) / 1.6)); }
 
   state(): [string, 'solid' | 'liquid' | 'gas' | 'supercritical' | 'plasma'] {
-    if (this.ionized > 0.3) return ['плазма (показана условно)', 'plasma'];
+    if (this.ionized > 0.3) return [t('плазма (показана условно)'), 'plasma'];
     let solid = 0, dense = 0;
     for (const c of this.coord) { if (c >= 5) solid++; if (c >= 3) dense++; }
-    const sf = solid / this.n, df = dense / this.n, t = this.targetT;
-    if (t < 0.42 && sf > 0.55) return ['твёрдое — кристалл', 'solid'];
-    if (t < 0.42 && df > 0.25) return ['кристаллики + пар', 'solid'];
-    if (t > 0.53 && this.density > 0.3) return ['сверхкритический флюид', 'supercritical'];
-    if (df > 0.6) return ['жидкость', 'liquid'];
-    if (df > 0.2) return ['капли жидкости + пар', 'liquid'];
-    return ['газ', 'gas'];
+    const sf = solid / this.n, df = dense / this.n, tT = this.targetT;
+    if (tT < 0.42 && sf > 0.55) return [t('твёрдое — кристалл'), 'solid'];
+    if (tT < 0.42 && df > 0.25) return [t('кристаллики + пар'), 'solid'];
+    if (tT > 0.53 && this.density > 0.3) return [t('сверхкритический флюид'), 'supercritical'];
+    if (df > 0.6) return [t('жидкость'), 'liquid'];
+    if (df > 0.2) return [t('капли жидкости + пар'), 'liquid'];
+    return [t('газ'), 'gas'];
   }
 }
 
@@ -167,9 +168,9 @@ export class TunnelSim {
 // ── 3. Литография: изображение решётки 1:1 через объектив (когерентно / диполь) ──
 export interface LithoSource { id: string; name: string; lambda: number; na: number }
 export const LITHO_SOURCES: LithoSource[] = [
-  {id: 'dry', name: 'DUV 193 нм, сухая (NA 0,93)', lambda: 193, na: 0.93},
-  {id: 'imm', name: 'DUV 193 нм, иммерсия (NA 1,35)', lambda: 193, na: 1.35},
-  {id: 'euv', name: 'EUV 13,5 нм (NA 0,33)', lambda: 13.5, na: 0.33},
+  {id: 'dry', name: t('DUV 193 нм, сухая (NA 0,93)'), lambda: 193, na: 0.93},
+  {id: 'imm', name: t('DUV 193 нм, иммерсия (NA 1,35)'), lambda: 193, na: 1.35},
+  {id: 'euv', name: t('EUV 13,5 нм (NA 0,33)'), lambda: 13.5, na: 0.33},
   {id: 'hna', name: 'High-NA EUV (NA 0,55)', lambda: 13.5, na: 0.55},
   {id: 'hyper', name: 'Hyper-NA EUV (NA 0,75)', lambda: 13.5, na: 0.75},
 ];

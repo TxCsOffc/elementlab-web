@@ -11,12 +11,14 @@ import {SegmentedControl, SegmentedControlItem} from '@astryxdesign/core/Segment
 import {PlayCircleIcon} from '../components/icons';
 import {PageHeader, Note, Section, Stat, useTok} from '../components/ui';
 import {useCanvas} from '../components/useCanvas';
+import ZoomSim from '../sims/ZoomSim';
 import {ParticleSim, TunnelSim, BECSim, LITHO_SOURCES, lithoIntensity, lithoPoles} from '../sims/models';
 import {PHASE_TOKEN} from '../lib/phase';
 import {num, sci} from '../lib/fmt';
+import {t} from '../i18n';
 
-type Kind = 'particles' | 'tunneling' | 'litho' | 'bec';
-const KINDS: [Kind, string][] = [['particles', 'Частицы: от кристалла до плазмы'], ['tunneling', 'Туннелирование электрона'], ['litho', 'Почему литографии нужен короткий свет'], ['bec', 'Конденсат Бозе–Эйнштейна']];
+type Kind = 'zoom' | 'particles' | 'tunneling' | 'litho' | 'bec';
+const KINDS: [Kind, string][] = [['zoom', t('От чипа до кварка')], ['particles', t('Частицы: от кристалла до плазмы')], ['tunneling', t('Туннелирование электрона')], ['litho', t('Почему литографии нужен короткий свет')], ['bec', t('Конденсат Бозе–Эйнштейна')]];
 
 const DARK = 'rgb(12,14,20)';
 
@@ -70,23 +72,23 @@ function Particles() {
   }, [temp, box, paused], true);
   return (
     <SimLayout
-      canvas={<Card padding={0} height={520} variant="transparent"><canvas ref={ref} style={{width: '100%', height: '100%', display: 'block'}} aria-label="Симуляция 144 атомов" /></Card>}
+      canvas={<Card padding={0} height={520} variant="transparent"><canvas ref={ref} style={{width: '100%', height: '100%', display: 'block'}} aria-label={t('Симуляция 144 атомов')} /></Card>}
       stats={<>
-        <Stat label="Что сейчас" value={state[0]} tone="accent" />
-        <Stat label="Если это аргон" value={`${num(temp * 119.8, 0)} K · ${num(temp * 119.8 - 273.15, 0)} °C`} />
-        <Stat label="Плотность (для аргона)" value={num(sim.density * 1.68, 2) + ' г/см³'} />
+        <Stat label={t('Что сейчас')} value={state[0]} tone="accent" />
+        <Stat label={t('Если это аргон')} value={`${num(temp * 119.8, 0)} K · ${num(temp * 119.8 - 273.15, 0)} °C`} />
+        <Stat label={t('Плотность (для аргона)')} value={num(sim.density * 1.68, 2) + t(' г/см³')} />
       </>}
       side={<>
-        <Section title="Управление">
-          <Slider label="Температура, ε/k" value={temp} min={0.05} max={4} step={0.01} onChange={(v: number) => setTemp(v as number)} valueDisplay="text" formatValue={(v: number) => num(v, 2)} />
-          <Slider label="Размер коробки (меньше — сильнее сжато), σ" value={box} min={13} max={40} step={0.5} onChange={(v: number) => setBox(v as number)} valueDisplay="text" formatValue={(v: number) => num(v, 0)} />
+        <Section title={t('Управление')}>
+          <Slider label={t('Температура, ε/k')} value={temp} min={0.05} max={4} step={0.01} onChange={(v: number) => setTemp(v as number)} valueDisplay="text" formatValue={(v: number) => num(v, 2)} />
+          <Slider label={t('Размер коробки (меньше — сильнее сжато), σ')} value={box} min={13} max={40} step={0.5} onChange={(v: number) => setBox(v as number)} valueDisplay="text" formatValue={(v: number) => num(v, 0)} />
           <HStack gap={2}>
-            <Button label={paused ? 'Продолжить' : 'Пауза'} onClick={() => setPaused(!paused)} />
-            <Button label="Снова в кристалл" onClick={() => { sim.reset(box); setTemp(0.15); }} />
+            <Button label={paused ? t('Продолжить') : t('Пауза')} onClick={() => setPaused(!paused)} />
+            <Button label={t('Снова в кристалл')} onClick={() => { sim.reset(box); setTemp(0.15); }} />
           </HStack>
         </Section>
-        <Note text="Каждый шарик — атом. Они притягиваются на расстоянии и отталкиваются вплотную (потенциал Леннард-Джонса — так ведут себя аргон, криптон, ксенон). Холодно — атомы выстраиваются в шестиугольную решётку. Теплее — решётка тает. Ещё теплее — разлетаются в газ. Линии — соседи, цвет — скорость." />
-        <Note status="success" title="При чём тут чипы" text="Так же рассчитывают реальные процессы на фабрике — рост плёнок, травление, плавление кремния лазером. Это называется молекулярной динамикой. Плазма здесь нарисована условно: реальные атомы аргона ионизируются при ~10 000 K." />
+        <Note text={t('Каждый шарик — атом. Они притягиваются на расстоянии и отталкиваются вплотную (потенциал Леннард-Джонса — так ведут себя аргон, криптон, ксенон). Холодно — атомы выстраиваются в шестиугольную решётку. Теплее — решётка тает. Ещё теплее — разлетаются в газ. Линии — соседи, цвет — скорость.')} />
+        <Note status="success" title={t('При чём тут чипы')} text={t('Так же рассчитывают реальные процессы на фабрике — рост плёнок, травление, плавление кремния лазером. Это называется молекулярной динамикой. Плазма здесь нарисована условно: реальные атомы аргона ионизируются при ~10 000 K.')} />
       </>}
     />
   );
@@ -114,10 +116,10 @@ function Tunneling() {
     const bx = sim.start * xs, bw = Math.max(2, sim.width * xs), bh = sim.height * vS;
     ctx.fillStyle = tok('--color-data-categorical-orange'); ctx.globalAlpha = 0.6; ctx.fillRect(bx, base - bh, bw, bh); ctx.globalAlpha = 1;
     ctx.font = '600 11px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = tok('--color-data-orange-3');
-    ctx.fillText(`стенка ${num(sim.height, 2)} эВ`, bx + bw / 2, base - bh - 8);
+    ctx.fillText(t('стенка {0} эВ', num(sim.height, 2)), bx + bw / 2, base - bh - 8);
     const ey = base - sim.energy * vS;
     ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.moveTo(0, ey); ctx.lineTo(w, ey); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.textAlign = 'left'; ctx.fillText('энергия электрона', 12, ey - 6);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.textAlign = 'left'; ctx.fillText(t('энергия электрона'), 12, ey - 6);
     const maxP = 0.14, ph = h - 90;
     ctx.beginPath(); ctx.moveTo(0, base);
     for (let j = 0; j < sim.n; j += 2) ctx.lineTo(j * sim.dx * xs, base - Math.min(1, (sim.re[j] ** 2 + sim.im[j] ** 2) / maxP) * ph);
@@ -129,36 +131,36 @@ function Tunneling() {
     ctx.stroke();
     ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.moveTo(0, base); ctx.lineTo(w, base); ctx.stroke();
     ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '10px system-ui'; ctx.textAlign = 'center';
-    for (let nm = 10; nm < 100; nm += 10) ctx.fillText(`${nm} нм`, nm * xs, base + 14);
+    for (let nm = 10; nm < 100; nm += 10) ctx.fillText(t('{0} нм', nm), nm * xs, base + 14);
     ctx.fillStyle = tok('--color-data-categorical-teal'); ctx.font = '600 11px system-ui'; ctx.textAlign = 'left';
-    ctx.fillText('вероятность найти электрон', 12, 18);
+    ctx.fillText(t('вероятность найти электрон'), 12, 18);
   }, [running], true);
   return (
     <SimLayout
-      canvas={<Card padding={0} height={440} variant="transparent"><canvas ref={ref} style={{width: '100%', height: '100%', display: 'block'}} aria-label="Волна электрона и стенка" /></Card>}
+      canvas={<Card padding={0} height={440} variant="transparent"><canvas ref={ref} style={{width: '100%', height: '100%', display: 'block'}} aria-label={t('Волна электрона и стенка')} /></Card>}
       stats={<>
-        <Stat label="Время" value={num(stats.time, 0) + ' фс'} />
-        <Stat label="Прошло сквозь стенку" value={sci(Math.max(stats.trans, 1e-12) * 100, 2) + ' %'} tone="accent" />
-        <Stat label="Точная формула" value={sci(sim.exact * 100, 2) + ' %'} />
-        <Stat label="Грубая оценка (ВКБ)" value={sci(sim.wkb * 100, 2) + ' %'} />
+        <Stat label={t('Время')} value={num(stats.time, 0) + t(' фс')} />
+        <Stat label={t('Прошло сквозь стенку')} value={sci(Math.max(stats.trans, 1e-12) * 100, 2) + ' %'} tone="accent" />
+        <Stat label={t('Точная формула')} value={sci(sim.exact * 100, 2) + ' %'} />
+        <Stat label={t('Грубая оценка (ВКБ)')} value={sci(sim.wkb * 100, 2) + ' %'} />
       </>}
       side={<>
-        <Section title="Управление">
-          <SegmentedControl label="Материал" value={mass} onChange={(v) => { setMass(v); restart(v); }} layout="fill" size="sm">
+        <Section title={t('Управление')}>
+          <SegmentedControl label={t('Материал')} value={mass} onChange={(v) => { setMass(v); restart(v); }} layout="fill" size="sm">
             <SegmentedControlItem value="0.041" label="InGaAs · 0,041" />
-            <SegmentedControlItem value="0.19" label="Кремний · 0,19" />
+            <SegmentedControlItem value="0.19" label={t('Кремний · 0,19')} />
             <SegmentedControlItem value="0.48" label="MoS₂ · 0,48" />
           </SegmentedControl>
-          <Slider label="Ширина стенки (затвора), нм" value={width} min={0.3} max={4} step={0.1} valueDisplay="text" formatValue={(v: number) => num(v, 1)} onChange={(v: number) => setWidth(v as number)} onChangeEnd={(v: number) => restart(mass, energy, height, v as number)} />
-          <Slider label="Высота стенки, эВ" value={height} min={0.1} max={1} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v, 2)} onChange={(v: number) => setHeight(v as number)} onChangeEnd={(v: number) => restart(mass, energy, v as number)} />
-          <Slider label="Энергия электрона, эВ" value={energy} min={0.05} max={0.9} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v, 2)} onChange={(v: number) => setEnergy(v as number)} onChangeEnd={(v: number) => restart(mass, v as number)} />
+          <Slider label={t('Ширина стенки (затвора), нм')} value={width} min={0.3} max={4} step={0.1} valueDisplay="text" formatValue={(v: number) => num(v, 1)} onChange={(v: number) => setWidth(v as number)} onChangeEnd={(v: number) => restart(mass, energy, height, v as number)} />
+          <Slider label={t('Высота стенки, эВ')} value={height} min={0.1} max={1} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v, 2)} onChange={(v: number) => setHeight(v as number)} onChangeEnd={(v: number) => restart(mass, energy, v as number)} />
+          <Slider label={t('Энергия электрона, эВ')} value={energy} min={0.05} max={0.9} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v, 2)} onChange={(v: number) => setEnergy(v as number)} onChangeEnd={(v: number) => restart(mass, v as number)} />
           <HStack gap={2}>
-            <Button label="Запустить заново" variant="primary" onClick={() => restart()} />
-            <Button label={running ? 'Пауза' : 'Дальше'} onClick={() => setRunning(!running)} />
+            <Button label={t('Запустить заново')} variant="primary" onClick={() => restart()} />
+            <Button label={running ? t('Пауза') : t('Дальше')} onClick={() => setRunning(!running)} />
           </HStack>
         </Section>
-        <Note text="Электрон в квантовом мире — это волна. Налетая на стенку, большая часть отражается, но маленький «хвост» просачивается насквозь — это туннелирование. Программа решает уравнение Шрёдингера на 1000 точках; результат совпадает с точной формулой для прямоугольной стенки." />
-        <Note status="success" title="При чём тут чипы" text="Стенка — это закрытый короткий затвор транзистора. Тоньше 2 нм — и заметная часть электронов пролетает насквозь: транзистор не выключается. С MoS₂ тяжёлые электроны просачиваются хуже — поэтому 2D-материалы позволяют затвор короче." />
+        <Note text={t('Электрон в квантовом мире — это волна. Налетая на стенку, большая часть отражается, но маленький «хвост» просачивается насквозь — это туннелирование. Программа решает уравнение Шрёдингера на 1000 точках; результат совпадает с точной формулой для прямоугольной стенки.')} />
+        <Note status="success" title={t('При чём тут чипы')} text={t('Стенка — это закрытый короткий затвор транзистора. Тоньше 2 нм — и заметная часть электронов пролетает насквозь: транзистор не выключается. С MoS₂ тяжёлые электроны просачиваются хуже — поэтому 2D-материалы позволяют затвор короче.')} />
       </>}
     />
   );
@@ -180,14 +182,14 @@ function Litho() {
     ctx.fillStyle = DARK; ctx.fillRect(0, 0, w, h);
     const pupilW = 170, pw = w - pupilW - 30, x0 = 16, span = 3 * pitch, X = (x: number) => x0 + (x / span) * pw;
     const label = (t: string, x: number, y: number, c = 'rgba(255,255,255,0.7)') => { ctx.fillStyle = c; ctx.font = '600 11px system-ui'; ctx.textAlign = 'left'; ctx.fillText(t, x, y); };
-    label('маска', x0, 18);
+    label(t('маска'), x0, 18);
     for (let k = 0; k < 3; k++) {
       const s = k * pitch;
       ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillRect(X(s), 28, X(s + pitch / 4) - X(s), 30); ctx.fillRect(X(s + (3 * pitch) / 4), 28, X(s + pitch) - X(s + (3 * pitch) / 4), 30);
       ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(X(s + pitch / 4), 28, X(s + (3 * pitch) / 4) - X(s + pitch / 4), 30);
     }
     const top = 90, bottom = h - 120, im = Math.max(imax, 0.3), Y = (i: number) => bottom - (i / im) * (bottom - top);
-    label('свет на пластине', x0, top - 10, tok('--color-data-categorical-teal'));
+    label(t('свет на пластине'), x0, top - 10, tok('--color-data-categorical-teal'));
     ctx.beginPath(); samples.forEach(([x, i], k) => (k ? ctx.lineTo(X(x), Y(i)) : ctx.moveTo(X(x), Y(i))));
     const curve = new Path2D(); samples.forEach(([x, i], k) => (k ? curve.lineTo(X(x), Y(i)) : curve.moveTo(X(x), Y(i))));
     ctx.lineTo(X(span), bottom); ctx.lineTo(X(0), bottom); ctx.closePath();
@@ -195,9 +197,9 @@ function Litho() {
     ctx.fillStyle = g; ctx.globalAlpha = 0.7; ctx.fill(); ctx.globalAlpha = 1;
     ctx.strokeStyle = tok('--color-data-categorical-teal'); ctx.lineWidth = 2; ctx.stroke(curve); ctx.lineWidth = 1;
     ctx.setLineDash([5, 4]); ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.moveTo(X(0), Y(threshold)); ctx.lineTo(X(span), Y(threshold)); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '10px system-ui'; ctx.textAlign = 'right'; ctx.fillText('порог резиста', X(span) - 4, Y(threshold) - 6);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '10px system-ui'; ctx.textAlign = 'right'; ctx.fillText(t('порог резиста'), X(span) - 4, Y(threshold) - 6);
     const ry = h - 80;
-    label('напечатано на кремнии', x0, ry - 10, tok('--color-data-categorical-green'));
+    label(t('напечатано на кремнии'), x0, ry - 10, tok('--color-data-categorical-green'));
     ctx.fillStyle = 'rgb(60,64,80)'; ctx.fillRect(X(0), ry, X(span) - X(0), 34);
     ctx.fillStyle = tok('--color-data-categorical-green');
     let run: number | null = null;
@@ -205,7 +207,7 @@ function Litho() {
       if (i > threshold) { if (run === null) run = x; } else if (run !== null) { ctx.fillRect(X(run), ry, X(Math.min(x, span)) - X(run), 34); run = null; }
     }
     const pc = {x: w - pupilW / 2 - 14, y: h / 2 - 10}, pr = 70, scale = pr / src.na;
-    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.textAlign = 'center'; ctx.font = '600 11px system-ui'; ctx.fillText('объектив (NA)', pc.x, pc.y - pr - 20);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.textAlign = 'center'; ctx.font = '600 11px system-ui'; ctx.fillText(t('объектив (NA)'), pc.x, pc.y - pr - 20);
     ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(pc.x, pc.y, pr, 0, 7); ctx.stroke(); ctx.lineWidth = 1;
     const poles = lithoPoles(src, pitch, offAxis);
     poles.forEach((s, pi) => {
@@ -216,25 +218,25 @@ function Litho() {
         ctx.beginPath(); ctx.arc(x, pc.y + (poles.length > 1 ? (pi ? 14 : -14) : 0), m === 0 ? 6 : 4.5, 0, 7); ctx.fill();
       }
     });
-    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '10px system-ui'; ctx.fillText('зелёные лучи пойманы,', pc.x, pc.y + pr + 22); ctx.fillText('красные потеряны', pc.x, pc.y + pr + 36);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '10px system-ui'; ctx.fillText(t('зелёные лучи пойманы,'), pc.x, pc.y + pr + 22); ctx.fillText(t('красные потеряны'), pc.x, pc.y + pr + 36);
   }, [samples, src, pitch, offAxis]);
   return (
     <SimLayout
-      canvas={<Card padding={0} height={440} variant="transparent"><canvas ref={ref} style={{width: '100%', height: '100%', display: 'block'}} aria-label="Маска, свет и напечатанный рисунок" /></Card>}
+      canvas={<Card padding={0} height={440} variant="transparent"><canvas ref={ref} style={{width: '100%', height: '100%', display: 'block'}} aria-label={t('Маска, свет и напечатанный рисунок')} /></Card>}
       stats={<>
-        <Stat label="Шаг" value={num(pitch, 0) + ' нм'} />
-        <Stat label="Предел этого сканера" value={num(minPitch, 1) + ' нм'} />
-        <Stat label="Контраст" value={num(contrast * 100, 0) + ' %'} tone={contrast > 0.4 ? 'success' : contrast > 0.15 ? 'warning' : 'error'} />
-        <Stat label="Результат" value={prints ? 'рисунок напечатан' : 'линии слились'} tone={prints ? 'success' : 'error'} />
+        <Stat label={t('Шаг')} value={num(pitch, 0) + t(' нм')} />
+        <Stat label={t('Предел этого сканера')} value={num(minPitch, 1) + t(' нм')} />
+        <Stat label={t('Контраст')} value={num(contrast * 100, 0) + ' %'} tone={contrast > 0.4 ? 'success' : contrast > 0.15 ? 'warning' : 'error'} />
+        <Stat label={t('Результат')} value={prints ? t('рисунок напечатан') : t('линии слились')} tone={prints ? 'success' : 'error'} />
       </>}
       side={<>
-        <Section title="Управление">
-          <Selector label="Сканер" value={srcId} onChange={(v) => v && setSrcId(v)} options={LITHO_SOURCES.map((s) => ({value: s.id, label: s.name}))} />
-          <Slider label="Шаг линий на маске, нм" value={pitch} min={8} max={200} step={1} valueDisplay="text" onChange={(v: number) => setPitch(v as number)} />
-          <Switch label="Внеосевое освещение (диполь)" value={offAxis} onChange={setOffAxis} />
+        <Section title={t('Управление')}>
+          <Selector label={t('Сканер')} value={srcId} onChange={(v) => v && setSrcId(v)} options={LITHO_SOURCES.map((s) => ({value: s.id, label: s.name}))} />
+          <Slider label={t('Шаг линий на маске, нм')} value={pitch} min={8} max={200} step={1} valueDisplay="text" onChange={(v: number) => setPitch(v as number)} />
+          <Switch label={t('Внеосевое освещение (диполь)')} value={offAxis} onChange={setOffAxis} />
         </Section>
-        <Note text="Свет, проходя через решётку маски, расходится на «лучи-порядки» под углами, которые зависят от шага. Объектив ловит только лучи в пределах своей апертуры NA (круг справа). Если пойман только центральный луч, рисунок пропадает. Чем короче волна и больше NA, тем мельче шаг можно напечатать." />
-        <Note status="success" title="Формула" text="Минимальный шаг ≈ λ / NA при обычном освещении и λ / (2·NA) при внеосевом. Для EUV 0,33: 13,5 / 0,66 ≈ 20 нм; для High-NA: 13,5 / 1,1 ≈ 12 нм — дальше нужны другие хитрости." />
+        <Note text={t('Свет, проходя через решётку маски, расходится на «лучи-порядки» под углами, которые зависят от шага. Объектив ловит только лучи в пределах своей апертуры NA (круг справа). Если пойман только центральный луч, рисунок пропадает. Чем короче волна и больше NA, тем мельче шаг можно напечатать.')} />
+        <Note status="success" title={t('Формула')} text={t('Минимальный шаг ≈ λ / NA при обычном освещении и λ / (2·NA) при внеосевом. Для EUV 0,33: 13,5 / 0,66 ≈ 20 нм; для High-NA: 13,5 / 1,1 ≈ 12 нм — дальше нужны другие хитрости.')} />
       </>}
     />
   );
@@ -242,16 +244,16 @@ function Litho() {
 
 function BEC() {
   const sim = useMemo(() => new BECSim(), []);
-  const [t, setT] = useState(0.7);
+  const [tr, setTr] = useState(0.7);
   const {tok} = useTok();
-  const f = Math.max(0, 1 - t ** 3);
+  const f = Math.max(0, 1 - tr ** 3);
   const ref = useCanvas((ctx, w, h, time) => {
-    sim.jiggle(t);
+    sim.jiggle(tr);
     ctx.fillStyle = DARK; ctx.fillRect(0, 0, w, h);
     const c = {x: w / 2, y: h / 2 - 40}, r0 = Math.min(w, h) * 0.42;
     ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     for (let k = 1; k <= 4; k++) { ctx.beginPath(); ctx.ellipse(c.x, c.y, (r0 * k) / 4, (r0 * k * 0.6) / 4, 0, 0, 7); ctx.stroke(); }
-    const thermal = 0.1 + 0.3 * Math.sqrt(Math.max(t, 0.02)), cond = 0.035 * (1 + 0.08 * Math.sin(time / 333));
+    const thermal = 0.1 + 0.3 * Math.sqrt(Math.max(tr, 0.02)), cond = 0.035 * (1 + 0.08 * Math.sin(time / 333));
     const hist = new Array(80).fill(0);
     const cCol = tok('--color-data-categorical-teal'), tCol = tok('--color-data-categorical-indigo');
     for (let i = 0; i < sim.n; i++) {
@@ -268,40 +270,41 @@ function BEC() {
     ctx.lineTo(c.x + r0, base); ctx.closePath();
     ctx.fillStyle = cCol; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
     ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '10.5px system-ui'; ctx.textAlign = 'left';
-    ctx.fillText('сколько атомов в каждой точке', c.x - r0, base - hg - 8);
-  }, [t], true);
+    ctx.fillText(t('сколько атомов в каждой точке'), c.x - r0, base - hg - 8);
+  }, [tr], true);
   return (
     <SimLayout
-      canvas={<Card padding={0} height={440} variant="transparent"><canvas ref={ref} style={{width: '100%', height: '100%', display: 'block'}} aria-label="Облако атомов рубидия" /></Card>}
+      canvas={<Card padding={0} height={440} variant="transparent"><canvas ref={ref} style={{width: '100%', height: '100%', display: 'block'}} aria-label={t('Облако атомов рубидия')} /></Card>}
       stats={<>
-        <Stat label="Температура" value={num(t * 170, 0) + ' нК'} />
-        <Stat label="Атомов в конденсате" value={num(f * 100, 0) + ' %'} tone="accent" />
-        <Stat label="Состояние" value={f > 0.95 ? 'почти чистый конденсат' : f > 0 ? 'конденсат + тепловое облако' : 'обычный холодный газ'} />
+        <Stat label={t('Температура')} value={num(tr * 170, 0) + t(' нК')} />
+        <Stat label={t('Атомов в конденсате')} value={num(f * 100, 0) + ' %'} tone="accent" />
+        <Stat label={t('Состояние')} value={f > 0.95 ? t('почти чистый конденсат') : f > 0 ? t('конденсат + тепловое облако') : t('обычный холодный газ')} />
       </>}
       side={<>
-        <Section title="Управление">
-          <Slider label="Температура (ниже 170 нК — конденсация)" value={t} min={0} max={2} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v * 170, 0) + ' нК'} onChange={(v: number) => setT(v as number)} />
+        <Section title={t('Управление')}>
+          <Slider label={t('Температура (ниже 170 нК — конденсация)')} value={tr} min={0} max={2} step={0.01} valueDisplay="text" formatValue={(v: number) => num(v * 170, 0) + t(' нК')} onChange={(v: number) => setTr(v as number)} />
         </Section>
-        <Note text="Выше критической температуры атомы — обычный газ: каждый летает сам по себе. Ниже атомы «сваливаются» в одно общее квантовое состояние и сжимаются в плотное ядро в центре, которое ведёт себя как одна волна. Доля конденсата растёт как 1 − (T/Tc)³. Так выглядел знаменитый опыт 1995 года." />
-        <Note status="success" title="При чём тут чипы" text="Холодные атомы — основа самых точных часов (погрешность 10⁻¹⁸) и сверхчувствительных датчиков. От атомных часов ведётся отсчёт частот, по которым калибруют лазерные измерители в литографических сканерах." />
+        <Note text={t('Выше критической температуры атомы — обычный газ: каждый летает сам по себе. Ниже атомы «сваливаются» в одно общее квантовое состояние и сжимаются в плотное ядро в центре, которое ведёт себя как одна волна. Доля конденсата растёт как 1 − (T/Tc)³. Так выглядел знаменитый опыт 1995 года.')} />
+        <Note status="success" title={t('При чём тут чипы')} text={t('Холодные атомы — основа самых точных часов (погрешность 10⁻¹⁸) и сверхчувствительных датчиков. От атомных часов ведётся отсчёт частот, по которым калибруют лазерные измерители в литографических сканерах.')} />
       </>}
     />
   );
 }
 
 export default function SimsPage() {
-  const [kind, setKind] = useState<Kind>('particles');
+  const [kind, setKind] = useState<Kind>('zoom');
   return (
     <VStack gap={6}>
-      <PageHeader icon={PlayCircleIcon} title="Симуляции" subtitle="Живые модели: двигайте ползунки и смотрите, как работает физика, на которой стоят чипы." />
-      <SegmentedControl label="Симуляция" value={kind} onChange={(v) => setKind(v as Kind)}>
+      <PageHeader icon={PlayCircleIcon} title={t('Симуляции')} subtitle={t('Живые модели: двигайте ползунки и смотрите, как работает физика, на которой стоят чипы.')} />
+      <SegmentedControl label={t('Симуляция')} value={kind} onChange={(v) => setKind(v as Kind)}>
         {KINDS.map(([id, t]) => <SegmentedControlItem key={id} value={id} label={t} />)}
       </SegmentedControl>
+      {kind === 'zoom' && <ZoomSim />}
       {kind === 'particles' && <Particles />}
       {kind === 'tunneling' && <Tunneling />}
       {kind === 'litho' && <Litho />}
       {kind === 'bec' && <BEC />}
-      <Text type="supporting" color="secondary">Все симуляции считаются прямо в браузере.</Text>
+      <Text type="supporting" color="secondary">{t('Все симуляции считаются прямо в браузере.')}</Text>
     </VStack>
   );
 }

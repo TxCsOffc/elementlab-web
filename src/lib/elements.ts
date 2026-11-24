@@ -1,3 +1,4 @@
+import {t} from '../i18n';
 // Данные 118 элементов: Z|Символ|Название|Масса|Кат|Tпл K|Tкип K|Плотность|ЭО|Rков пм|Кора ppm
 export type Category = 'alkali' | 'alkaline' | 'transition' | 'post' | 'metalloid' | 'nonmetal' | 'halogen' | 'noble' | 'lanthanide' | 'actinide' | 'unknown';
 
@@ -9,9 +10,9 @@ export interface Element {
 const CAT: Record<string, Category> = {A: 'alkali', E: 'alkaline', T: 'transition', P: 'post', M: 'metalloid', N: 'nonmetal', H: 'halogen', G: 'noble', L: 'lanthanide', C: 'actinide', U: 'unknown'};
 
 export const CATEGORY_TITLE: Record<Category, string> = {
-  alkali: 'Щелочные металлы', alkaline: 'Щёлочноземельные', transition: 'Переходные металлы', post: 'Постпереходные металлы',
-  metalloid: 'Полуметаллы', nonmetal: 'Неметаллы', halogen: 'Галогены', noble: 'Благородные газы',
-  lanthanide: 'Лантаноиды', actinide: 'Актиноиды', unknown: 'Свойства неизвестны',
+  alkali: t('Щелочные металлы'), alkaline: t('Щёлочноземельные'), transition: t('Переходные металлы'), post: t('Постпереходные металлы'),
+  metalloid: t('Полуметаллы'), nonmetal: t('Неметаллы'), halogen: t('Галогены'), noble: t('Благородные газы'),
+  lanthanide: t('Лантаноиды'), actinide: t('Актиноиды'), unknown: t('Свойства неизвестны'),
 };
 
 /** Цвет категории — токены палитры данных Astryx */
@@ -151,7 +152,7 @@ const num = (s: string) => (s === '-' ? undefined : Number(s));
 
 export const ELEMENTS: Element[] = RAW.trim().split('\n').map((line) => {
   const f = line.split('|').map((x) => x.trim());
-  return {z: Number(f[0]), symbol: f[1], name: f[2], mass: Number(f[3]), category: CAT[f[4]] ?? 'unknown',
+  return {z: Number(f[0]), symbol: f[1], name: t(f[2]), mass: Number(f[3]), category: CAT[f[4]] ?? 'unknown',
     melt: num(f[5]), boil: num(f[6]), density: num(f[7]), en: num(f[8]), radius: num(f[9]), abundance: num(f[10])};
 });
 
