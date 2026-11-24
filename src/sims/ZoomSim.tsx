@@ -38,11 +38,17 @@ const LAYERS = [
 
 const START = (() => { const z = Number(new URLSearchParams(window.location.search).get('zoom')); return z && z < LOG_MAX && z > LOG_MIN ? z : -2.3; })();
 
+/** Какой слой главный при данном поле зрения (log10 метров) */
+function layerAt(logW: number) {
+  const th: [number, string][] = [[-3.3, 'die'], [-5.3, 'blocks'], [-7.0, 'cells'], [-8.5, 'fet'], [-9.6, 'atoms'], [-11.5, 'cloud'], [-14.0, 'nucleus']];
+  const id = th.find(([v]) => logW > v)?.[1] ?? 'proton';
+  return LAYERS.find((l) => l.id === id)!;
+}
+
 export default function ZoomSim() {
   const [logW, setLogW] = useState(START);
   const [playing, setPlaying] = useState(false);
   const live = useRef({logW: START, dir: -1, last: 0});
-  const [layer, setLayer] = useState(LAYERS[0]);
   const {tok} = useTok();
 
   const ref = useCanvas((ctx, w, h, time) => {
@@ -177,11 +183,10 @@ export default function ZoomSim() {
     ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(20, h - 24); ctx.lineTo(20 + barPx, h - 24); ctx.moveTo(20, h - 30); ctx.lineTo(20, h - 18); ctx.moveTo(20 + barPx, h - 30); ctx.lineTo(20 + barPx, h - 18); ctx.stroke();
     ctx.fillStyle = 'white'; ctx.font = '600 12px system-ui'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.fillText(prettyLength(barM), 20, h - 34);
 
-    const best = LAYERS.reduce((a, b) => ((alphas[b.id] ?? 0) > (alphas[a.id] ?? 0) ? b : a), LAYERS[0]);
-    if (best.id !== layer.id && Math.round(time / 200) % 2 === 0) setLayer(best);
-  }, [playing, logW, layer], true);
+  }, [playing, logW], true);
 
   const W = 10 ** logW;
+  const layer = layerAt(logW);
   return (
     <VStack gap={4}>
       <Card padding={4}>
